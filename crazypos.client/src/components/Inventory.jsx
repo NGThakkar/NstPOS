@@ -45,7 +45,7 @@ export const Inventory = () => {
             setInventoryData(summary || []);
             setInventoryStats(stats);
             setLowStockItems(lowStock || []);
-        } catch (error) {
+        } catch (_error) {
             setMessage({ type: 'error', text: 'Failed to load inventory data' });
         } finally {
             setIsLoading(false);
@@ -91,8 +91,8 @@ export const Inventory = () => {
             setShowAdjustModal(false);
             setAdjustmentForm({ productId: '', newQuantity: '', reason: '' });
             await loadInventoryData();
-        } catch (error) {
-            setMessage({ type: 'error', text: error.message || 'Failed to adjust inventory' });
+        } catch (_error) {
+            setMessage({ type: 'error', text: _error.message || 'Failed to adjust inventory' });
         } finally {
             setIsLoading(false);
         }

@@ -25,6 +25,10 @@ public partial class crazypos_devContext : DbContext
 
     public virtual DbSet<InventoryAudit> InventoryAudits { get; set; }
 
+    public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<UserSession> UserSessions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -146,6 +150,87 @@ public partial class crazypos_devContext : DbContext
             entity.HasOne(d => d.Inventory).WithMany(p => p.InventoryAudits)
                 .HasForeignKey(d => d.Inventoryid)
                 .HasConstraintName("FK_inventory_audit_inventory");
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("users");
+
+            entity.HasKey(e => e.UserId).HasName("PK_users");
+
+            entity.HasIndex(e => e.Username, "IX_users_username").IsUnique();
+            entity.HasIndex(e => e.Email, "IX_users_email").IsUnique();
+
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.Username)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("username");
+            entity.Property(e => e.Email)
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnName("email");
+            entity.Property(e => e.PasswordHash)
+                .IsRequired()
+                .HasColumnName("password_hash");
+            entity.Property(e => e.FullName)
+                .HasMaxLength(100)
+                .HasColumnName("full_name");
+            entity.Property(e => e.Role)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasDefaultValue("Cashier")
+                .HasColumnName("role");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.LastLogin)
+                .HasColumnType("datetime")
+                .HasColumnName("last_login");
+            entity.Property(e => e.LastUpdated)
+                .HasColumnType("datetime")
+                .HasColumnName("last_updated");
+        });
+
+        modelBuilder.Entity<UserSession>(entity =>
+        {
+            entity.ToTable("user_sessions");
+
+            entity.HasKey(e => e.SessionId).HasName("PK_user_sessions");
+
+            entity.HasIndex(e => e.Token, "IX_user_sessions_token").IsUnique();
+            entity.HasIndex(e => e.UserId, "IX_user_sessions_user_id");
+
+            entity.Property(e => e.SessionId).HasColumnName("session_id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.Token)
+                .IsRequired()
+                .HasMaxLength(256)
+                .HasColumnName("token");
+            entity.Property(e => e.LoginTime)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("login_time");
+            entity.Property(e => e.LogoutTime)
+                .HasColumnType("datetime")
+                .HasColumnName("logout_time");
+            entity.Property(e => e.IPAddress)
+                .HasMaxLength(50)
+                .HasColumnName("ip_address");
+            entity.Property(e => e.UserAgent)
+                .HasMaxLength(500)
+                .HasColumnName("user_agent");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserSessions)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_user_sessions_users");
         });
 
         OnModelCreatingPartial(modelBuilder);

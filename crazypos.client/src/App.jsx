@@ -5,7 +5,8 @@ import {
     Package,
     History,
     Settings,
-    Store
+    Store,
+    LogOut
 } from 'lucide-react';
 import { Dashboard } from './components/Dashboard';
 import { ProductCatalog } from './components/ProductCatalog';
@@ -16,22 +17,34 @@ import { ProductList } from './components/ProductList';
 import { CategoryList } from './components/CategoryList';
 import { TransactionHistory } from './components/TransactionHistory';
 import { Inventory } from './components/Inventory';
+import { Login } from './components/Login';
 import { sampleProducts } from './data/products';
 import { loadTransactions, saveTransaction, loadProducts, loadCategories } from './utils/storage';
+import { getStoredToken, getStoredUser, logoutUser, isUserAuthenticated } from './utils/auth';
 
 function App() {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [productMenuOpen, setProductMenuOpen] = useState(false);
-
-    const toggleProductMenu = () => {
-        setProductMenuOpen((prev) => !prev);
-    };
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [authToken, setAuthToken] = useState(null);
     const [products, setProducts] = useState([]);
     const [cart, setCart] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [categoriesList, setCategoriesList] = useState([]);
+
+    useEffect(() => {
+        // Check if user is already logged in
+        const token = getStoredToken();
+        const user = getStoredUser();
+        if (token && user) {
+            setIsAuthenticated(true);
+            setCurrentUser(user);
+            setAuthToken(token);
+        }
+    }, []);
 
     // Load data on mount
     useEffect(() => {
@@ -155,6 +168,35 @@ function App() {
         setCart([]);
     };
 
+    const handleLoginSuccess = (user, token) => {
+        setIsAuthenticated(true);
+        setCurrentUser(user);
+        setAuthToken(token);
+    };
+
+    const handleLogout = async () => {
+        try {
+            if (authToken) {
+                await logoutUser(authToken);
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        setAuthToken(null);
+        setActiveTab('dashboard');
+    };
+
+    const toggleProductMenu = () => {
+        setProductMenuOpen((prev) => !prev);
+    };
+
+    // Show login screen if not authenticated
+    if (!isAuthenticated) {
+        return <Login onLoginSuccess={handleLoginSuccess} />;
+    }
+
     const navigation = [
         { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
         {
@@ -262,12 +304,19 @@ function App() {
 
                         <div className="flex items-center space-x-4">
                             <div className="text-right">
-                                <p className="text-sm font-medium text-gray-900">Store Manager</p>
-                                <p className="text-xs text-gray-600">Online</p>
+                                <p className="text-sm font-medium text-gray-900">{currentUser?.fullName || 'User'}</p>
+                                <p className="text-xs text-gray-600">{currentUser?.role || 'Cashier'}</p>
                             </div>
                             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                                <span className="text-white font-medium text-sm">SM</span>
+                                <span className="text-white font-medium text-sm">{(currentUser?.fullName || 'U').charAt(0).toUpperCase()}</span>
                             </div>
+                            <button
+                                onClick={handleLogout}
+                                className="ml-4 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                title="Logout"
+                            >
+                                <LogOut className="w-5 h-5" />
+                            </button>
                         </div>
                     </div>
                 </div>
