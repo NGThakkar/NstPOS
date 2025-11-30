@@ -265,7 +265,6 @@ export async function deleteHoldOrder(holdOrderId) {
         throw error;
     }
 }
-
 export async function getHoldOrderDetails(holdOrderId) {
     try {
         const response = await fetch(`${API_BASE_URL}/GetHoldOrderDetails?holdOrderId=${holdOrderId}`, {
@@ -276,6 +275,125 @@ export async function getHoldOrderDetails(holdOrderId) {
         });
         if (!response.ok) {
             throw new Error(`Error fetching hold order details: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+// ===== INVENTORY API FUNCTIONS =====
+
+export async function getInventorySummary() {
+    try {
+        const response = await fetch(API_BASE_URL + "/GetInventorySummary", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Error fetching inventory summary: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function getInventoryMovementHistory(productId = null) {
+    try {
+        const url = productId 
+            ? `${API_BASE_URL}/GetInventoryMovementHistory?productId=${productId}`
+            : `${API_BASE_URL}/GetInventoryMovementHistory`;
+        
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Error fetching inventory history: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function recordInventoryMovement(movementData) {
+    try {
+        const response = await fetch(API_BASE_URL + "/RecordInventoryMovement", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(movementData)
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error recording movement: ${response.statusText} - ${errorText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function adjustInventory(productId, newQuantity, reason) {
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/AdjustInventory?productId=${productId}&newQuantity=${newQuantity}&reason=${encodeURIComponent(reason)}`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+        if (!response.ok) {
+            throw new Error(`Error adjusting inventory: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function getLowStockItems(threshold = 5) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/GetLowStockItems?threshold=${threshold}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Error fetching low stock items: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function getInventoryStats() {
+    try {
+        const response = await fetch(API_BASE_URL + "/GetInventoryStats", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Error fetching inventory stats: ${response.statusText}`);
         }
         return await response.json();
     } catch (error) {

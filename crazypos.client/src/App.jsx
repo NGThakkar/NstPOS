@@ -15,6 +15,7 @@ import { PaymentModal } from './components/PaymentModal';
 import { ProductList } from './components/ProductList';
 import { CategoryList } from './components/CategoryList';
 import { TransactionHistory } from './components/TransactionHistory';
+import { Inventory } from './components/Inventory';
 import { sampleProducts } from './data/products';
 import { loadTransactions, saveTransaction, loadProducts, loadCategories } from './utils/storage';
 
@@ -222,10 +223,7 @@ function App() {
                 return (<> {isLoading ? (<><Spinner /> </>) : (<TransactionHistory transactions={transactions} /> )}</>);
             case 'inventory':
                 return (<>
-                    {isLoading ? (<><Spinner /></>) : (<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">Inventory Management</h2>
-                        <p className="text-gray-600">Inventory management features coming soon...</p>
-                    </div>)}
+                    {isLoading ? (<><Spinner /></>) : (<Inventory />)}
                 </>
                 );
             case 'settings':

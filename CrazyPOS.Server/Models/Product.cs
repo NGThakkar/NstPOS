@@ -26,4 +26,6 @@ public partial class Product
     public string Description { get; set; }
 
     public virtual ICollection<HoldOrderItem> HoldOrderItems { get; set; } = new List<HoldOrderItem>();
+
+    public virtual ICollection<Inventory> Inventories { get; set; } = new List<Inventory>();
 }

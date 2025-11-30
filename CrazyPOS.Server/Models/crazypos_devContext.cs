@@ -21,6 +21,10 @@ public partial class crazypos_devContext : DbContext
 
     public virtual DbSet<Product> Products { get; set; }
 
+    public virtual DbSet<Inventory> Inventories { get; set; }
+
+    public virtual DbSet<InventoryAudit> InventoryAudits { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -104,6 +108,44 @@ public partial class crazypos_devContext : DbContext
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("price");
             entity.Property(e => e.Stock).HasColumnName("stock");
+        });
+
+        modelBuilder.Entity<Inventory>(entity =>
+        {
+            entity.ToTable("inventory");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Productid).HasColumnName("productid");
+            entity.Property(e => e.Quantity).HasColumnName("quantity");
+            entity.Property(e => e.MovementType).HasColumnName("movement_type");
+            entity.Property(e => e.Reference).HasColumnName("reference");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.Notes).HasColumnName("notes");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.Inventories)
+                .HasForeignKey(d => d.Productid)
+                .HasConstraintName("FK_inventory_product");
+        });
+
+        modelBuilder.Entity<InventoryAudit>(entity =>
+        {
+            entity.ToTable("inventory_audit");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Inventoryid).HasColumnName("inventoryid");
+            entity.Property(e => e.ChangeAmount).HasColumnName("change_amount");
+            entity.Property(e => e.ChangeDate)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("change_date");
+
+            entity.HasOne(d => d.Inventory).WithMany(p => p.InventoryAudits)
+                .HasForeignKey(d => d.Inventoryid)
+                .HasConstraintName("FK_inventory_audit_inventory");
         });
 
         OnModelCreatingPartial(modelBuilder);

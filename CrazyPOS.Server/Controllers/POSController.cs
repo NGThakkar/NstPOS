@@ -419,5 +419,255 @@ namespace CrazyPOS.Server.Controllers
                 return BadRequest($"Error retrieving hold order details: {ex.Message}");
             }
         }
+
+        // ===== INVENTORY ENDPOINTS =====
+
+        [HttpGet]
+        [ActionName("GetInventorySummary")]
+        public IActionResult GetInventorySummary()
+        {
+            try
+            {
+                using (var dbContext = _dbFactory.CreateDbContext())
+                {
+                    var inventory = (from p in dbContext.Products
+                                     select new InventorySummaryDto
+                                     {
+                                         Productid = p.Productid,
+                                         ProductName = p.Name,
+                                         CurrentStock = p.Stock ?? 0,
+                                         ReorderLevel = 5,  // Default reorder level
+                                         ReorderQuantity = 20,  // Default reorder quantity
+                                         UnitPrice = p.Price,
+                                         TotalValue = (p.Stock ?? 0) * (p.Price ?? 0),
+                                         Status = (p.Stock ?? 0) == 0 ? "Out of Stock"
+                                                : (p.Stock ?? 0) <= 5 ? "Low Stock"
+                                                : "In Stock"
+                                     })
+                                     .OrderBy(x => x.Status == "Out of Stock" ? 0
+                                                : x.Status == "Low Stock" ? 1
+                                                : 2)
+                                     .ToList();
+
+                    return Ok(inventory);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error retrieving inventory summary: {ex.Message}");
+            }
+        }
+
+        [HttpGet]
+        [ActionName("GetInventoryMovementHistory")]
+        public IActionResult GetInventoryMovementHistory(long? productId = null)
+        {
+            try
+            {
+                using (var dbContext = _dbFactory.CreateDbContext())
+                {
+                    var movements = dbContext.Inventories
+                        .Where(i => productId == null || i.Productid == productId)
+                        .Join(dbContext.Products,
+                            i => i.Productid,
+                            p => p.Productid,
+                            (i, p) => new InventoryDto
+                            {
+                                InventoryId = i.Id,
+                                Productid = i.Productid,
+                                ProductName = p.Name,
+                                Quantity = i.Quantity,
+                                MovementType = i.MovementType,
+                                Reference = i.Reference,
+                                CreatedAt = i.CreatedAt,
+                                CreatedBy = i.CreatedBy,
+                                Notes = i.Notes
+                            })
+                        .OrderByDescending(x => x.CreatedAt)
+                        .Take(500)  // Limit to last 500 movements
+                        .ToList();
+
+                    return Ok(movements);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error retrieving inventory movements: {ex.Message}");
+            }
+        }
+
+        [HttpPost]
+        [ActionName("RecordInventoryMovement")]
+        public IActionResult RecordInventoryMovement([FromBody] InventoryMovementDto movementDto)
+        {
+            if (movementDto == null || movementDto.Productid <= 0)
+            {
+                return BadRequest("Invalid product ID");
+            }
+
+            if (string.IsNullOrWhiteSpace(movementDto.MovementType))
+            {
+                return BadRequest("Movement type is required");
+            }
+
+            try
+            {
+                using (var dbContext = _dbFactory.CreateDbContext())
+                {
+                    // Get product
+                    var product = dbContext.Products.Find(movementDto.Productid);
+                    if (product == null)
+                    {
+                        return NotFound("Product not found");
+                    }
+
+                    // Create inventory movement record
+                    var inventory = new Inventory
+                    {
+                        Productid = movementDto.Productid,
+                        Quantity = movementDto.QuantityChange,
+                        MovementType = movementDto.MovementType,
+                        Reference = movementDto.Reference,
+                        Notes = movementDto.Notes,
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = "System"  // In real app, use current user
+                    };
+
+                    dbContext.Inventories.Add(inventory);
+
+                    // Update product stock
+                    int newStock = (product.Stock ?? 0) + movementDto.QuantityChange;
+                    if (newStock < 0)
+                    {
+                        return BadRequest("Cannot reduce stock below zero");
+                    }
+
+                    product.Stock = newStock;
+                    dbContext.SaveChanges();
+
+                    return Ok(new { message = "Inventory movement recorded", newStock = newStock });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error recording inventory movement: {ex.Message}");
+            }
+        }
+
+        [HttpPost]
+        [ActionName("AdjustInventory")]
+        public IActionResult AdjustInventory(long productId, int newQuantity, string reason)
+        {
+            if (productId <= 0 || newQuantity < 0)
+            {
+                return BadRequest("Invalid product ID or quantity");
+            }
+
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                return BadRequest("Adjustment reason is required");
+            }
+
+            try
+            {
+                using (var dbContext = _dbFactory.CreateDbContext())
+                {
+                    var product = dbContext.Products.Find(productId);
+                    if (product == null)
+                    {
+                        return NotFound("Product not found");
+                    }
+
+                    int oldStock = product.Stock ?? 0;
+                    int quantityChange = newQuantity - oldStock;
+
+                    // Record inventory movement
+                    var inventory = new Inventory
+                    {
+                        Productid = productId,
+                        Quantity = quantityChange,
+                        MovementType = "Adjustment",
+                        Reference = $"Manual Adjustment",
+                        Notes = reason,
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = "System"
+                    };
+
+                    dbContext.Inventories.Add(inventory);
+                    product.Stock = newQuantity;
+                    dbContext.SaveChanges();
+
+                    return Ok(new
+                    {
+                        message = "Inventory adjusted successfully",
+                        oldStock = oldStock,
+                        newStock = newQuantity,
+                        quantityChanged = quantityChange
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error adjusting inventory: {ex.Message}");
+            }
+        }
+
+        [HttpGet]
+        [ActionName("GetLowStockItems")]
+        public IActionResult GetLowStockItems(int threshold = 5)
+        {
+            try
+            {
+                using (var dbContext = _dbFactory.CreateDbContext())
+                {
+                    var lowStockItems = dbContext.Products
+                        .Where(p => (p.Stock ?? 0) <= threshold)
+                        .Select(p => new InventorySummaryDto
+                        {
+                            Productid = p.Productid,
+                            ProductName = p.Name,
+                            CurrentStock = p.Stock ?? 0,
+                            UnitPrice = p.Price,
+                            TotalValue = (p.Stock ?? 0) * (p.Price ?? 0),
+                            Status = (p.Stock ?? 0) == 0 ? "Out of Stock" : "Low Stock"
+                        })
+                        .OrderBy(x => x.CurrentStock)
+                        .ToList();
+
+                    return Ok(lowStockItems);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error retrieving low stock items: {ex.Message}");
+            }
+        }
+
+        [HttpGet]
+        [ActionName("GetInventoryStats")]
+        public IActionResult GetInventoryStats()
+        {
+            try
+            {
+                using (var dbContext = _dbFactory.CreateDbContext())
+                {
+                    var stats = new
+                    {
+                        totalProducts = dbContext.Products.Count(),
+                        totalStockValue = dbContext.Products.Sum(p => (p.Stock ?? 0) * (p.Price ?? 0)),
+                        outOfStockCount = dbContext.Products.Count(p => (p.Stock ?? 0) == 0),
+                        lowStockCount = dbContext.Products.Count(p => (p.Stock ?? 0) > 0 && (p.Stock ?? 0) <= 5),
+                        totalInventoryMovements = dbContext.Inventories.Count(),
+                        averageStockLevel = dbContext.Products.Average(p => (p.Stock ?? 0))
+                    };
+
+                    return Ok(stats);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error retrieving inventory stats: {ex.Message}");
+            }
+        }
     }
 }
