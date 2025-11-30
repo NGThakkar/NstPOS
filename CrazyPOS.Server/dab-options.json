@@ -1,0 +1,16 @@
+﻿{
+   "ConnectionStringName": "dab-connection-string",
+   "Dacpac": null,
+   "DatabaseType": 3,
+   "ProjectPath": "D:\\Nishchal\\project\\CrazyPOS\\CrazyPOS.Server",
+   "Tables": [
+      {
+         "Name": "[dbo].[categories]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[product]",
+         "ObjectType": 0
+      }
+   ]
+}
