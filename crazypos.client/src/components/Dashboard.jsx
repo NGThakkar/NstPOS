@@ -55,7 +55,7 @@ export const Dashboard = ({ transactions, setActiveTab  }) => {
         <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-600">Welcome to CrayPOS - Your business overview</p>
+                <p className="text-gray-600">Welcome to NstPOS - Your business overview</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -110,7 +110,7 @@ export const Dashboard = ({ transactions, setActiveTab  }) => {
                         <button onClick={() => { setActiveTab('addproduct')} } className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium">
                             Add Product
                         </button>
-                        <button className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg hover:bg-orange-700 transition-colors font-medium">
+                        <button onClick={() => { setActiveTab('inventory') }} className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg hover:bg-orange-700 transition-colors font-medium">
                             View Inventory
                         </button>
                         <button className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium">
