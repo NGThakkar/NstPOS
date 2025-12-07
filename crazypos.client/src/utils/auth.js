@@ -163,14 +163,17 @@ export async function deactivateUser(userId) {
 }
 
 export function getStoredToken() {
-    return localStorage.getItem('authToken');
+    //return localStorage.getItem('authToken');
+    return sessionStorage.getItem('authToken');
 }
 
 export function getStoredUser() {
-    const user = localStorage.getItem('user');
+    //const user = localStorage.getItem('user');
+    const user = sessionStorage.getItem('user');
     return user ? JSON.parse(user) : null;
 }
 
 export function isUserAuthenticated() {
-    return !!localStorage.getItem('authToken') && !!localStorage.getItem('user');
+    //return !!localStorage.getItem('authToken') && !!localStorage.getItem('user');
+    return !!sessionStorage.getItem('authToken') && !!sessionStorage.getItem('user');
 }

@@ -35,8 +35,10 @@ export const Login = ({ onLoginSuccess }) => {
             const response = await loginUser(loginForm.username, loginForm.password);
             if (response.success) {
                 setMessage({ type: 'success', text: 'Login successful!' });
-                localStorage.setItem('authToken', response.token);
-                localStorage.setItem('user', JSON.stringify(response.user));
+                sessionStorage.setItem('authToken', response.token);
+                //localStorage.setItem('authToken', response.token);
+                sessionStorage.setItem('user', JSON.stringify(response.user));
+                //localStorage.setItem('user', JSON.stringify(response.user));
                 setTimeout(() => {
                     onLoginSuccess(response.user, response.token);
                 }, 1000);

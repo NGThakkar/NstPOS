@@ -1,22 +1,90 @@
-const API_BASE_URL = "http://localhost:5053/api/POS";
+const API_BASE_URL_POS = "http://localhost:5053/api/POS";
+const API_BASE_URL_SALES = "http://localhost:5053/api/Sales";
 
 export const loadTransactions = () => {
     const stored = localStorage.getItem('craypos-transactions');
     return stored ? JSON.parse(stored) : [];
 };
 
-export const saveTransaction = (transaction) => {
+export const saveTransaction = async (transaction) => {
     const transactions = loadTransactions();
     transactions.push(transaction);
     localStorage.setItem('craypos-transactions', JSON.stringify(transactions));
-};
+    
+    // Also save to backend database
+    try {
+        const result = await saveSaleTransaction(transaction);
+        console.log('Transaction saved to backend:', result);
+    } catch (error) {
+        console.error('Error saving transaction to backend:', error);
+        // Transaction is saved locally even if backend fails
+    }
+}
+
+export async function saveSaleTransaction(transaction) {
+    try {
+        // Get the auth token from sessionStorage
+        const token = sessionStorage.getItem('authToken');
+
+        const saleTransactionData = {
+            items: transaction.items.map(item => ({
+                productId: item.productid,
+                quantity: item.quantity,
+                unitPrice: item.price,
+                discountPercent: 0,
+                discountAmount: 0
+            })),
+            subTotal: transaction.subtotal,
+            taxAmount: transaction.tax,
+            totalAmount: transaction.total,
+            paymentMethod: transaction.paymentMethod,
+            amountTendered: transaction.amountTendered || transaction.total,
+            discountAmount: transaction.discount || 0,
+            notes: transaction.cashier ? `Cashier: ${transaction.cashier}` : 'POS Sale'
+        };
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        // Add Authorization header if token exists
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+            // Also add as custom header for fallback
+            headers['X-Auth-Token'] = token;
+        }
+
+        console.log('Sending transaction to:', `${API_BASE_URL_SALES}/CreateTransaction`);
+        console.log('Transaction data:', saleTransactionData);
+        console.log('Auth token:', token ? 'Present' : 'Missing');
+
+        const response = await fetch(`${API_BASE_URL_SALES}/CreateTransaction`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(saleTransactionData)
+        });
+
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Backend error response:', errorText);
+            throw new Error(`Error saving transaction: ${response.statusText} - ${errorText}`);
+        }
+
+        const result = await response.json();
+        console.log('Transaction saved successfully:', result);
+        return result;
+    } catch (error) {
+        console.error('saveSaleTransaction Error:', error);
+        throw error;
+    }
+}
 
 export async function loadProducts () {
-    //const stored = localStorage.getItem('craypos-products');
-    //return stored ? JSON.parse(stored) : [];
-
     try {
-        const response = await fetch(API_BASE_URL + "/GetProductDetails");
+        const response = await fetch(API_BASE_URL_POS + "/GetProductDetails");
         if (!response.ok) {
             throw new Error(`Error fetching products: ${response.statusText}`);
         }    
@@ -29,7 +97,7 @@ export async function loadProducts () {
 
 export async function loadCategories() {
     try {
-        const response = await fetch(API_BASE_URL + "/GetCategories");
+        const response = await fetch(API_BASE_URL_POS + "/GetCategories");
         if (!response.ok) {
             throw new Error(`Error fetching categories: ${response.statusText}`);
         }
@@ -77,7 +145,7 @@ export async function addProduct(product) {
 
         console.log('Sending FormData with keys:', Array.from(formData.keys()));
 
-        const response = await fetch(API_BASE_URL + "/AddProduct", {
+        const response = await fetch(API_BASE_URL_POS + "/AddProduct", {
             method: "POST",            
             body: formData
         });
@@ -95,7 +163,7 @@ export async function addProduct(product) {
 
 export async function addCategory(categoryName) {
     try {
-        const response = await fetch(API_BASE_URL + "/AddCategory", {
+        const response = await fetch(API_BASE_URL_POS + "/AddCategory", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -114,7 +182,7 @@ export async function addCategory(categoryName) {
 
 export async function updateCategory(categoryId, newCategoryName) {
     try {
-        const response = await fetch(API_BASE_URL + "/UpdateCategory", {
+        const response = await fetch(API_BASE_URL_POS + "/UpdateCategory", {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -133,7 +201,7 @@ export async function updateCategory(categoryId, newCategoryName) {
 
 export async function deleteCategory(categoryId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/DeleteCategory?categoryId=${categoryId}`, {
+        const response = await fetch(`${API_BASE_URL_POS}/DeleteCategory?categoryId=${categoryId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json"
@@ -167,7 +235,7 @@ export async function updateProduct(product) {
 
         console.log('Sending FormData with keys:', Array.from(formData.keys()));
 
-        const response = await fetch(API_BASE_URL + "/UpdateProduct", {
+        const response = await fetch(API_BASE_URL_POS + "/UpdateProduct", {
             method: "PUT",
             body: formData
         });
@@ -184,7 +252,7 @@ export async function updateProduct(product) {
 
 export async function deleteProduct(productId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/DeleteProduct?productId=${productId}`, {
+        const response = await fetch(`${API_BASE_URL_POS}/DeleteProduct?productId=${productId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json"
@@ -202,7 +270,7 @@ export async function deleteProduct(productId) {
 
 export async function createHoldOrder(holdOrderData) {
     try {
-        const response = await fetch(API_BASE_URL + "/CreateHoldOrder", {
+        const response = await fetch(API_BASE_URL_POS + "/CreateHoldOrder", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -223,7 +291,7 @@ export async function createHoldOrder(holdOrderData) {
 export async function getHoldOrders() {
     try {
         console.log('API Call: GET /api/POS/GetHoldOrders');
-        const response = await fetch(API_BASE_URL + "/GetHoldOrders", {
+        const response = await fetch(API_BASE_URL_POS + "/GetHoldOrders", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -250,7 +318,7 @@ export async function getHoldOrders() {
 
 export async function deleteHoldOrder(holdOrderId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/DeleteHoldOrder?holdOrderId=${holdOrderId}`, {
+        const response = await fetch(`${API_BASE_URL_POS}/DeleteHoldOrder?holdOrderId=${holdOrderId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json"
@@ -267,7 +335,7 @@ export async function deleteHoldOrder(holdOrderId) {
 }
 export async function getHoldOrderDetails(holdOrderId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/GetHoldOrderDetails?holdOrderId=${holdOrderId}`, {
+        const response = await fetch(`${API_BASE_URL_POS}/GetHoldOrderDetails?holdOrderId=${holdOrderId}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -287,7 +355,7 @@ export async function getHoldOrderDetails(holdOrderId) {
 
 export async function getInventorySummary() {
     try {
-        const response = await fetch(API_BASE_URL + "/GetInventorySummary", {
+        const response = await fetch(API_BASE_URL_POS + "/GetInventorySummary", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -306,8 +374,8 @@ export async function getInventorySummary() {
 export async function getInventoryMovementHistory(productId = null) {
     try {
         const url = productId 
-            ? `${API_BASE_URL}/GetInventoryMovementHistory?productId=${productId}`
-            : `${API_BASE_URL}/GetInventoryMovementHistory`;
+            ? `${API_BASE_URL_POS}/GetInventoryMovementHistory?productId=${productId}`
+            : `${API_BASE_URL_POS}/GetInventoryMovementHistory`;
         
         const response = await fetch(url, {
             method: "GET",
@@ -327,7 +395,7 @@ export async function getInventoryMovementHistory(productId = null) {
 
 export async function recordInventoryMovement(movementData) {
     try {
-        const response = await fetch(API_BASE_URL + "/RecordInventoryMovement", {
+        const response = await fetch(API_BASE_URL_POS + "/RecordInventoryMovement", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -348,7 +416,7 @@ export async function recordInventoryMovement(movementData) {
 export async function adjustInventory(productId, newQuantity, reason) {
     try {
         const response = await fetch(
-            `${API_BASE_URL}/AdjustInventory?productId=${productId}&newQuantity=${newQuantity}&reason=${encodeURIComponent(reason)}`,
+            `${API_BASE_URL_POS}/AdjustInventory?productId=${productId}&newQuantity=${newQuantity}&reason=${encodeURIComponent(reason)}`,
             {
                 method: "POST",
                 headers: {
@@ -368,7 +436,7 @@ export async function adjustInventory(productId, newQuantity, reason) {
 
 export async function getLowStockItems(threshold = 5) {
     try {
-        const response = await fetch(`${API_BASE_URL}/GetLowStockItems?threshold=${threshold}`, {
+        const response = await fetch(`${API_BASE_URL_POS}/GetLowStockItems?threshold=${threshold}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -386,7 +454,7 @@ export async function getLowStockItems(threshold = 5) {
 
 export async function getInventoryStats() {
     try {
-        const response = await fetch(API_BASE_URL + "/GetInventoryStats", {
+        const response = await fetch(API_BASE_URL_POS + "/GetInventoryStats", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"

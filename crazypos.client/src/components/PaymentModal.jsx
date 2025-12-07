@@ -31,10 +31,10 @@ export const PaymentModal = ({
 
         setProcessing(true);
 
-        // Simulate payment processing
-        setTimeout(() => {
+        try {
+            // Create transaction with proper data
             const transaction = {
-                id: Date.now().toString(),
+                id: 'TXN-' + Date.now().toString(),
                 items: cart,
                 subtotal,
                 tax,
@@ -42,11 +42,15 @@ export const PaymentModal = ({
                 total,
                 paymentMethod: paymentMethod === 'card' ? 'Credit Card' :
                     paymentMethod === 'mobile' ? 'Mobile Pay' : 'Cash',
+                amountTendered: paymentMethod === 'cash' ? cashReceivedAmount : total,
+                change: change,
                 timestamp: new Date(),
                 cashier: 'Current User'
             };
 
+            // Call payment completion which will save transaction
             onPaymentComplete(transaction);
+            
             setProcessing(false);
             setCompleted(true);
 
@@ -55,7 +59,11 @@ export const PaymentModal = ({
                 onClose();
                 setCashReceived('');
             }, 2000);
-        }, 2000);
+        } catch (error) {
+            console.error('Payment error:', error);
+            alert('Error processing payment: ' + error.message);
+            setProcessing(false);
+        }
     };
 
     const paymentMethods = [

@@ -28,4 +28,8 @@ public partial class Product
     public virtual ICollection<HoldOrderItem> HoldOrderItems { get; set; } = new List<HoldOrderItem>();
 
     public virtual ICollection<Inventory> Inventories { get; set; } = new List<Inventory>();
+
+    public virtual ICollection<TransactionItem> TransactionItems { get; set; } = new List<TransactionItem>();
+
+    public virtual ICollection<BarcodeMapping> BarcodeMappings { get; set; } = new List<BarcodeMapping>();
 }

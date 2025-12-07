@@ -18,6 +18,7 @@ import { CategoryList } from './components/CategoryList';
 import { TransactionHistory } from './components/TransactionHistory';
 import { Inventory } from './components/Inventory';
 import { Login } from './components/Login';
+import { Sales } from './components/Sales';
 import { sampleProducts } from './data/products';
 import { loadTransactions, saveTransaction, loadProducts, loadCategories } from './utils/storage';
 import { getStoredToken, getStoredUser, logoutUser, isUserAuthenticated } from './utils/auth';
@@ -50,29 +51,37 @@ function App() {
     useEffect(() => {
         async function loadData() {
             setIsLoading(true);
-            if (activeTab === 'pos') {
-                const storedProducts = await fetchProducts();
-                if (storedProducts && storedProducts.length > 0) {
-                    setProducts(storedProducts);
-                } else {
-                    //setProducts(sampleProducts);
-                    // saveProducts(sampleProducts);
-                }
-            }
+            try {
+                // Always load transactions first
+                const storedTransactions = loadTransactions();
+                setTransactions(storedTransactions);
 
-            if (activeTab === 'addproduct' || activeTab === 'pos' || activeTab === 'addcategory' || activeTab === 'categories') {
-                const categories = await fetchCategories();
-                if (categories && categories.length > 0) {
-                    setCategoriesList(categories);
+                if (activeTab === 'sales') {
+                    const productsData = await loadProducts();
+                    const categoriesData = await loadCategories();
+                    
+                    setProducts(productsData || []);
+                    setCategoriesList(categoriesData || []);
+                } else if (activeTab === 'pos') {
+                    const storedProducts = await fetchProducts();
+                    if (storedProducts && storedProducts.length > 0) {
+                        setProducts(storedProducts);
+                    }
+                    const categories = await loadCategories();
+                    if (categories && categories.length > 0) {
+                        setCategoriesList(categories);
+                    }
+                } else if (activeTab === 'addproduct' || activeTab === 'addcategory' || activeTab === 'categories') {
+                    const categories = await loadCategories();
+                    if (categories && categories.length > 0) {
+                        setCategoriesList(categories);
+                    }
                 }
-                //else {
-                //    setCategoriesList([]);
-                //}
+            } catch (error) {
+                console.error('Error loading data:', error);
+            } finally {
+                setIsLoading(false);
             }
-
-            const storedTransactions = loadTransactions();
-            setTransactions(storedTransactions);
-            setIsLoading(false);
         }
 
         loadData();
@@ -208,7 +217,8 @@ function App() {
                 { id: 'categories', name: 'Categories' }
             ]
         },
-        { id: 'pos', name: 'Point of Sale', icon: ShoppingCart },
+        { id: 'sales', name: 'Sales', icon: ShoppingCart },
+        { id: 'pos', name: 'Point of Sale (Legacy)', icon: ShoppingCart },
         { id: 'inventory', name: 'Inventory', icon: Package },
         { id: 'transactions', name: 'Transactions', icon: History },
         { id: 'settings', name: 'Settings', icon: Settings }
@@ -224,6 +234,18 @@ function App() {
                     </div>
                 </>
                 ) : (<Dashboard transactions={transactions} setActiveTab={setActiveTab} />)}</>);
+            case 'sales':
+                return (
+                    <>
+                        {isLoading ? (
+                            <div className="flex items-center justify-center h-full">
+                                <Spinner />
+                            </div>
+                        ) : (
+                            <Sales />
+                        )}
+                    </>
+                );
             case 'pos':
                 return (
                     <>

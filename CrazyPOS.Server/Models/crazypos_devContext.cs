@@ -29,6 +29,18 @@ public partial class crazypos_devContext : DbContext
 
     public virtual DbSet<UserSession> UserSessions { get; set; }
 
+    public virtual DbSet<SalesTransaction> SalesTransactions { get; set; }
+
+    public virtual DbSet<TransactionItem> TransactionItems { get; set; }
+
+    public virtual DbSet<PaymentMethod> PaymentMethods { get; set; }
+
+    public virtual DbSet<BarcodeMapping> BarcodeMappings { get; set; }
+
+    public virtual DbSet<PaymentTenderLog> PaymentTenderLogs { get; set; }
+
+    public virtual DbSet<DailySalesSummary> DailySalesSummaries { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -231,6 +243,224 @@ public partial class crazypos_devContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.UserSessions)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK_user_sessions_users");
+        });
+
+        modelBuilder.Entity<SalesTransaction>(entity =>
+        {
+            entity.ToTable("sales_transactions");
+
+            entity.HasKey(e => e.TransactionId).HasName("PK_sales_transactions");
+
+            entity.HasIndex(e => e.TransactionCode, "IX_sales_transactions_code").IsUnique();
+            entity.HasIndex(e => e.TransactionDate, "IX_sales_transactions_date");
+            entity.HasIndex(e => e.UserId, "IX_sales_transactions_user");
+            entity.HasIndex(e => e.Status, "IX_sales_transactions_status");
+
+            entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
+            entity.Property(e => e.TransactionCode)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("transaction_code");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.TransactionDate)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("transaction_date");
+            entity.Property(e => e.SubTotal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("subtotal");
+            entity.Property(e => e.TaxAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("tax_amount");
+            entity.Property(e => e.TotalAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("total_amount");
+            entity.Property(e => e.PaymentMethod)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("payment_method");
+            entity.Property(e => e.AmountTendered)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("amount_tendered");
+            entity.Property(e => e.ChangeAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("change_amount");
+            entity.Property(e => e.DiscountAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("discount_amount");
+            entity.Property(e => e.Notes).HasColumnName("notes");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasDefaultValue("completed")
+                .HasColumnName("status");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+
+            entity.HasOne(d => d.User).WithMany(p => p.SalesTransactions)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_sales_transactions_users");
+        });
+
+        modelBuilder.Entity<TransactionItem>(entity =>
+        {
+            entity.ToTable("transaction_items");
+
+            entity.HasKey(e => e.ItemId).HasName("PK_transaction_items");
+
+            entity.HasIndex(e => e.TransactionId, "IX_transaction_items_transaction");
+            entity.HasIndex(e => e.Productid, "IX_transaction_items_product");
+
+            entity.Property(e => e.ItemId).HasColumnName("item_id");
+            entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
+            entity.Property(e => e.Productid).HasColumnName("productid");
+            entity.Property(e => e.Quantity).HasColumnName("quantity");
+            entity.Property(e => e.UnitPrice)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("unit_price");
+            entity.Property(e => e.DiscountPercent)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("discount_percent");
+            entity.Property(e => e.DiscountAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("discount_amount");
+            entity.Property(e => e.LineTotal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("line_total");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+
+            entity.HasOne(d => d.SalesTransaction).WithMany(p => p.TransactionItems)
+                .HasForeignKey(d => d.TransactionId)
+                .HasConstraintName("FK_transaction_items_sales_transactions");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.TransactionItems)
+                .HasForeignKey(d => d.Productid)
+                .HasConstraintName("FK_transaction_items_product");
+        });
+
+        modelBuilder.Entity<PaymentMethod>(entity =>
+        {
+            entity.ToTable("payment_methods");
+
+            entity.HasKey(e => e.PaymentMethodId).HasName("PK_payment_methods");
+
+            entity.Property(e => e.PaymentMethodId).HasColumnName("payment_method_id");
+            entity.Property(e => e.MethodName)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("method_name");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+        });
+
+        modelBuilder.Entity<BarcodeMapping>(entity =>
+        {
+            entity.ToTable("barcode_mapping");
+
+            entity.HasKey(e => e.BarcodeId).HasName("PK_barcode_mapping");
+
+            entity.HasIndex(e => e.Barcode, "IX_barcode_mapping_barcode").IsUnique();
+            entity.HasIndex(e => e.Productid, "IX_barcode_mapping_product");
+
+            entity.Property(e => e.BarcodeId).HasColumnName("barcode_id");
+            entity.Property(e => e.Barcode)
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnName("barcode");
+            entity.Property(e => e.Productid).HasColumnName("productid");
+            entity.Property(e => e.BarcodeType)
+                .HasMaxLength(50)
+                .HasColumnName("barcode_type");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.BarcodeMappings)
+                .HasForeignKey(d => d.Productid)
+                .HasConstraintName("FK_barcode_mapping_product");
+        });
+
+        modelBuilder.Entity<PaymentTenderLog>(entity =>
+        {
+            entity.ToTable("payment_tender_log");
+
+            entity.HasKey(e => e.TenderId).HasName("PK_payment_tender_log");
+
+            entity.HasIndex(e => e.TransactionId, "IX_payment_tender_log_transaction");
+
+            entity.Property(e => e.TenderId).HasColumnName("tender_id");
+            entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
+            entity.Property(e => e.PaymentMethod)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("payment_method");
+            entity.Property(e => e.AmountReceived)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("amount_received");
+            entity.Property(e => e.ChangeReturned)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("change_returned");
+            entity.Property(e => e.PaymentStatus)
+                .HasMaxLength(20)
+                .HasColumnName("payment_status");
+            entity.Property(e => e.PaymentReference)
+                .HasMaxLength(100)
+                .HasColumnName("payment_reference");
+            entity.Property(e => e.Notes).HasColumnName("notes");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+
+            entity.HasOne(d => d.SalesTransaction).WithMany(p => p.PaymentTenderLogs)
+                .HasForeignKey(d => d.TransactionId)
+                .HasConstraintName("FK_payment_tender_log_sales_transactions");
+        });
+
+        modelBuilder.Entity<DailySalesSummary>(entity =>
+        {
+            entity.ToTable("daily_sales_summary");
+
+            entity.HasKey(e => e.SummaryId).HasName("PK_daily_sales_summary");
+
+            entity.HasIndex(e => e.SummaryDate, "IX_daily_sales_summary_date").IsUnique();
+
+            entity.Property(e => e.SummaryId).HasColumnName("summary_id");
+            entity.Property(e => e.SummaryDate)
+                .HasColumnType("date")
+                .HasColumnName("summary_date");
+            entity.Property(e => e.TotalSales)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("total_sales");
+            entity.Property(e => e.TotalTax)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("total_tax");
+            entity.Property(e => e.TotalDiscount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("total_discount");
+            entity.Property(e => e.TransactionCount).HasColumnName("transaction_count");
+            entity.Property(e => e.ItemsSold).HasColumnName("items_sold");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
         });
 
         OnModelCreatingPartial(modelBuilder);

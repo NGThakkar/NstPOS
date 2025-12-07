@@ -244,6 +244,128 @@ export const ShoppingCart = ({
                     <div className="text-2xl font-bold text-gray-900">$0.00</div>
                     <div className="text-sm text-gray-600">Pay Balance</div>
                 </div>
+
+                {/* Hold List Modal - Available even when cart is empty */}
+                {showHoldListModal && (
+                    <div className="fixed inset-0 bg-gray-500/60 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                            <div className="sticky top-0 bg-white p-6 border-b border-gray-200 flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-gray-900">Hold List</h3>
+                                <button
+                                    onClick={() => setShowHoldListModal(false)}
+                                    className="text-gray-400 hover:text-gray-600"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {isLoadingHold ? (
+                                <div className="p-6 text-center">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                    <p className="text-gray-500">Loading hold orders...</p>
+                                </div>
+                            ) : holdOrders.length === 0 ? (
+                                <div className="p-6 text-center">
+                                    <p className="text-gray-500">No orders on hold</p>
+                                </div>
+                            ) : (
+                                <div className="p-6 space-y-4">
+                                    {holdOrders.map((order) => (
+                                        <div key={order.holdorderid} className="border border-gray-200 rounded-lg p-4">
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div>
+                                                    <p className="font-medium text-gray-900">{order.customerName}</p>
+                                                    <p className="text-xs text-gray-600">
+                                                        {new Date(order.createdAt).toLocaleString()}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-semibold text-gray-900">${order.totalAmount.toFixed(2)}</p>
+                                                    <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded mt-1">
+                                                        {order.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-gray-50 rounded p-2 mb-3 max-h-24 overflow-y-auto">
+                                                {order.items && order.items.length > 0 ? (
+                                                    order.items.map((item, idx) => (
+                                                        <div key={idx} className="flex justify-between text-xs text-gray-700 py-1">
+                                                            <span>{item.productName} x{item.quantity}</span>
+                                                            <span>${item.total.toFixed(2)}</span>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <p className="text-xs text-gray-500">No items in this order</p>
+                                                )}
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleLoadHoldOrder(order.holdorderid)}
+                                                    disabled={isLoadingHold}
+                                                    className="flex-1 px-3 py-2 text-sm font-medium text-green-600 border border-green-300 rounded hover:bg-green-50 transition-colors disabled:opacity-50"
+                                                >
+                                                    Load & Checkout
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteHoldOrder(order.holdorderid)}
+                                                    disabled={isLoadingHold}
+                                                    className="flex-1 px-3 py-2 text-sm font-medium text-red-600 border border-red-300 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6">
+                                <button
+                                    onClick={() => setShowHoldListModal(false)}
+                                    className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Customer Menu Close on Outside Click */}
+                {showCustomerMenu && (
+                    <div
+                        className="fixed inset-0 z-0"
+                        onClick={() => setShowCustomerMenu(false)}
+                    />
+                )}
+
+                {/* Message Notification */}
+                {message.text && (
+                    <div className={`fixed bottom-4 right-4 p-4 rounded-lg flex items-center gap-3 z-40 ${
+                        message.type === 'success' 
+                            ? 'bg-green-50 border border-green-200' 
+                            : message.type === 'info'
+                            ? 'bg-blue-50 border border-blue-200'
+                            : 'bg-red-50 border border-red-200'
+                    }`}>
+                        {message.type === 'success' ? (
+                            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                        ) : message.type === 'info' ? (
+                            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                        ) : (
+                            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                        )}
+                        <span className={message.type === 'success' 
+                            ? 'text-green-800' 
+                            : message.type === 'info'
+                            ? 'text-blue-800'
+                            : 'text-red-800'}>
+                            {message.text}
+                        </span>
+                    </div>
+                )}
             </div>
         );
     }
@@ -479,7 +601,7 @@ export const ShoppingCart = ({
                 </div>
             )}
 
-            {/* Hold List Modal */}
+            {/* Hold List Modal - Available even when cart is empty */}
             {showHoldListModal && (
                 <div className="fixed inset-0 bg-gray-500/60 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
