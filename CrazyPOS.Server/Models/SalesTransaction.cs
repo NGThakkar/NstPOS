@@ -11,6 +11,8 @@ public partial class SalesTransaction
 
     public long UserId { get; set; }
 
+    public long? CustomerId { get; set; }
+
     public DateTime TransactionDate { get; set; }
 
     public decimal SubTotal { get; set; }
@@ -36,6 +38,8 @@ public partial class SalesTransaction
     public DateTime CreatedAt { get; set; }
 
     public virtual User User { get; set; }
+
+    public virtual Customer Customer { get; set; }
 
     public virtual ICollection<TransactionItem> TransactionItems { get; set; } = new List<TransactionItem>();
 

@@ -560,3 +560,176 @@ export async function getInventoryStats() {
         throw error;
     }
 }
+
+// ===== CUSTOMER API FUNCTIONS =====
+
+const API_BASE_URL_CUSTOMER = "http://localhost:5053/api/Customer";
+
+export async function getAllCustomers(pageNumber = 1, pageSize = 50) {
+    try {
+        const response = await fetch(`${API_BASE_URL_CUSTOMER}/GetAllCustomers?pageNumber=${pageNumber}&pageSize=${pageSize}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Error fetching customers: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching customers:', error);
+        throw error;
+    }
+}
+
+export async function searchCustomers(searchTerm) {
+    try {
+        if (!searchTerm || searchTerm.trim() === '') {
+            return [];
+        }
+        const response = await fetch(`${API_BASE_URL_CUSTOMER}/SearchCustomers?searchTerm=${encodeURIComponent(searchTerm)}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Error searching customers: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error searching customers:', error);
+        throw error;
+    }
+}
+
+export async function getCustomer(customerId) {
+    try {
+        const response = await fetch(`${API_BASE_URL_CUSTOMER}/GetCustomer?customerId=${customerId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Error fetching customer: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching customer:', error);
+        throw error;
+    }
+}
+
+export async function createCustomer(customerData) {
+    try {
+        const response = await fetch(`${API_BASE_URL_CUSTOMER}/CreateCustomer`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(customerData)
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error creating customer: ${response.statusText} - ${errorText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error creating customer:', error);
+        throw error;
+    }
+}
+
+export async function updateCustomer(customerData) {
+    try {
+        const response = await fetch(`${API_BASE_URL_CUSTOMER}/UpdateCustomer`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(customerData)
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error updating customer: ${response.statusText} - ${errorText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating customer:', error);
+        throw error;
+    }
+}
+
+export async function deleteCustomer(customerId) {
+    try {
+        const response = await fetch(`${API_BASE_URL_CUSTOMER}/DeleteCustomer?customerId=${customerId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Error deleting customer: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error deleting customer:', error);
+        throw error;
+    }
+}
+
+export async function getCustomerTransactions(customerId, pageNumber = 1, pageSize = 20) {
+    try {
+        const response = await fetch(`${API_BASE_URL_CUSTOMER}/GetCustomerTransactions?customerId=${customerId}&pageNumber=${pageNumber}&pageSize=${pageSize}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Error fetching customer transactions: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching customer transactions:', error);
+        throw error;
+    }
+}
+
+export async function updateLoyaltyPoints(customerId, points) {
+    try {
+        const response = await fetch(`${API_BASE_URL_CUSTOMER}/UpdateLoyaltyPoints?customerId=${customerId}&points=${points}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Error updating loyalty points: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating loyalty points:', error);
+        throw error;
+    }
+}
+
+export async function getLoyaltyConfig() {
+    try {
+        const response = await fetch(`${API_BASE_URL_CUSTOMER}/GetLoyaltyConfig`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Error fetching loyalty config: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching loyalty config:', error);
+        throw error;
+    }
+}

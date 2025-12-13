@@ -6,7 +6,8 @@ import {
     History,
     Settings,
     Store,
-    LogOut
+    LogOut,
+    Users
 } from 'lucide-react';
 import { Dashboard } from './components/Dashboard';
 import { ProductCatalog } from './components/ProductCatalog';
@@ -17,6 +18,7 @@ import { ProductList } from './components/ProductList';
 import { CategoryList } from './components/CategoryList';
 import { TransactionHistory } from './components/TransactionHistory';
 import { Inventory } from './components/Inventory';
+import { CustomerManagement } from './components/CustomerManagement';
 import { Login } from './components/Login';
 import { Sales } from './components/Sales';
 import { sampleProducts } from './data/products';
@@ -220,6 +222,7 @@ function App() {
         { id: 'sales', name: 'Sales', icon: ShoppingCart },
         { id: 'pos', name: 'Point of Sale (Legacy)', icon: ShoppingCart },
         { id: 'inventory', name: 'Inventory', icon: Package },
+        { id: 'customers', name: 'Customers', icon: Users },
         { id: 'transactions', name: 'Transactions', icon: History },
         { id: 'settings', name: 'Settings', icon: Settings }
     ];
@@ -285,6 +288,17 @@ function App() {
                 );
             case 'transactions':
                 return (<> {isLoading ? (<><Spinner /> </>) : (<TransactionHistory transactions={transactions} /> )}</>);
+            case 'customers':
+                return (<>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-full">
+                            <Spinner />
+                        </div>
+                    ) : (
+                        <CustomerManagement />
+                    )}
+                </>
+                );
             case 'inventory':
                 return (<>
                     {isLoading ? (<><Spinner /></>) : (<Inventory />)}

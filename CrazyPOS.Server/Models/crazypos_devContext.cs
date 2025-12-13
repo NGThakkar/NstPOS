@@ -29,6 +29,8 @@ public partial class crazypos_devContext : DbContext
 
     public virtual DbSet<UserSession> UserSessions { get; set; }
 
+    public virtual DbSet<Customer> Customers { get; set; }
+
     public virtual DbSet<SalesTransaction> SalesTransactions { get; set; }
 
     public virtual DbSet<TransactionItem> TransactionItems { get; set; }
@@ -245,6 +247,84 @@ public partial class crazypos_devContext : DbContext
                 .HasConstraintName("FK_user_sessions_users");
         });
 
+        modelBuilder.Entity<Customer>(entity =>
+        {
+            entity.ToTable("customers");
+
+            entity.HasKey(e => e.CustomerId).HasName("PK_customers");
+
+            entity.HasIndex(e => e.CustomerCode, "IX_customers_code").IsUnique();
+            entity.HasIndex(e => e.Email, "IX_customers_email");
+            entity.HasIndex(e => e.PhoneNumber, "IX_customers_phone");
+
+            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
+            entity.Property(e => e.CustomerCode)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("customer_code");
+            entity.Property(e => e.FirstName)
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnName("first_name");
+            entity.Property(e => e.LastName)
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnName("last_name");
+            entity.Property(e => e.Email)
+                .HasMaxLength(100)
+                .HasColumnName("email");
+            entity.Property(e => e.PhoneNumber)
+                .HasMaxLength(20)
+                .HasColumnName("phone_number");
+            entity.Property(e => e.Address)
+                .HasMaxLength(255)
+                .HasColumnName("address");
+            entity.Property(e => e.City)
+                .HasMaxLength(100)
+                .HasColumnName("city");
+            entity.Property(e => e.State)
+                .HasMaxLength(100)
+                .HasColumnName("state");
+            entity.Property(e => e.ZipCode)
+                .HasMaxLength(20)
+                .HasColumnName("zip_code");
+            entity.Property(e => e.Country)
+                .HasMaxLength(100)
+                .HasColumnName("country");
+            entity.Property(e => e.TotalPurchases)
+                .HasColumnType("decimal(18, 2)")
+                .HasDefaultValue(0)
+                .HasColumnName("total_purchases");
+            entity.Property(e => e.TotalOutstanding)
+                .HasColumnType("decimal(18, 2)")
+                .HasDefaultValue(0)
+                .HasColumnName("total_outstanding");
+            entity.Property(e => e.DateOfBirth)
+                .HasColumnType("date")
+                .HasColumnName("date_of_birth");
+            entity.Property(e => e.Gender)
+                .HasMaxLength(10)
+                .HasColumnName("gender");
+            entity.Property(e => e.LoyaltyStatus)
+                .HasMaxLength(50)
+                .HasDefaultValue("Regular")
+                .HasColumnName("loyalty_status");
+            entity.Property(e => e.LoyaltyPoints)
+                .HasDefaultValue(0)
+                .HasColumnName("loyalty_points");
+            entity.Property(e => e.Notes).HasColumnName("notes");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.LastUpdated)
+                .HasColumnType("datetime")
+                .HasColumnName("last_updated");
+        });
+
         modelBuilder.Entity<SalesTransaction>(entity =>
         {
             entity.ToTable("sales_transactions");
@@ -254,6 +334,7 @@ public partial class crazypos_devContext : DbContext
             entity.HasIndex(e => e.TransactionCode, "IX_sales_transactions_code").IsUnique();
             entity.HasIndex(e => e.TransactionDate, "IX_sales_transactions_date");
             entity.HasIndex(e => e.UserId, "IX_sales_transactions_user");
+            entity.HasIndex(e => e.CustomerId, "IX_sales_transactions_customer");
             entity.HasIndex(e => e.Status, "IX_sales_transactions_status");
 
             entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
@@ -262,6 +343,7 @@ public partial class crazypos_devContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("transaction_code");
             entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
             entity.Property(e => e.TransactionDate)
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnType("datetime")
@@ -304,6 +386,10 @@ public partial class crazypos_devContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.SalesTransactions)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK_sales_transactions_users");
+
+            entity.HasOne(d => d.Customer).WithMany(p => p.SalesTransactions)
+                .HasForeignKey(d => d.CustomerId)
+                .HasConstraintName("FK_sales_transactions_customers");
         });
 
         modelBuilder.Entity<TransactionItem>(entity =>
