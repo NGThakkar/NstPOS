@@ -128,6 +128,12 @@ export const CustomerManagement = () => {
 
     const handleEdit = async (customer) => {
         setSelectedCustomer(customer);
+        try {
+            const fullCustomer = await getCustomer(customer.customerId);
+            customer = fullCustomer;
+        } catch (error) {
+            console.error('Error fetching full customer data for edit:', error);
+        }
         setFormData({
             firstName: customer.firstName,
             lastName: customer.lastName,
@@ -162,13 +168,19 @@ export const CustomerManagement = () => {
     };
 
     const handleViewDetails = async (customer) => {
-        setSelectedCustomer(customer);
         setIsLoading(true);
         try {
+            // Fetch full customer details from API (not just the list view data)
+            const fullCustomer = await getCustomer(customer.customerId);
+            setSelectedCustomer(fullCustomer);           
+            
+            // Fetch transactions
             const transactions = await getCustomerTransactions(customer.customerId);
             setCustomerTransactions(transactions || []);
         } catch (error) {
-            console.error('Error loading transactions:', error);
+            console.error('Error loading customer details:', error);
+            // Fallback to customer from list
+            setSelectedCustomer(customer);
             setCustomerTransactions([]);
         } finally {
             setIsLoading(false);
@@ -533,12 +545,18 @@ export const CustomerManagement = () => {
                                     <MapPin className="w-5 h-5 text-gray-400 mt-1" />
                                     <div>
                                         <p className="font-medium text-gray-900">
-                                            {selectedCustomer.address || '-'}
+                                            {selectedCustomer.address && selectedCustomer.address.trim() ? selectedCustomer.address : 'Not provided'}
                                         </p>
-                                        <p className="text-sm text-gray-600">
-                                            {selectedCustomer.city}, {selectedCustomer.state} {selectedCustomer.zipCode}
-                                        </p>
-                                        <p className="text-sm text-gray-600">{selectedCustomer.country || '-'}</p>
+                                        {selectedCustomer.city || selectedCustomer.state || selectedCustomer.zipCode ? (
+                                            <>
+                                                <p className="text-sm text-gray-600">
+                                                    {[selectedCustomer.city, selectedCustomer.state, selectedCustomer.zipCode].filter(Boolean).join(', ')}
+                                                </p>
+                                                <p className="text-sm text-gray-600">{selectedCustomer.country || 'Not provided'}</p>
+                                            </>
+                                        ) : (
+                                            <p className="text-sm text-gray-600">Address details not provided</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
