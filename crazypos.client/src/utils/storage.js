@@ -1,5 +1,6 @@
 const API_BASE_URL_POS = "http://localhost:5053/api/POS";
 const API_BASE_URL_SALES = "http://localhost:5053/api/Sales";
+const API_BASE_URL_CUSTOMER = "http://localhost:5053/api/Customer";
 
 // NEW: Get full transaction details from backend
 export async function getTransactionDetails(transactionId) {
@@ -562,8 +563,6 @@ export async function getInventoryStats() {
 }
 
 // ===== CUSTOMER API FUNCTIONS =====
-
-const API_BASE_URL_CUSTOMER = "http://localhost:5053/api/Customer";
 
 export async function getAllCustomers(pageNumber = 1, pageSize = 50) {
     try {

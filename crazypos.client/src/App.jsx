@@ -37,6 +37,7 @@ function App() {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [categoriesList, setCategoriesList] = useState([]);
+    
 
     useEffect(() => {
         // Check if user is already logged in
@@ -62,8 +63,10 @@ function App() {
                     const productsData = await loadProducts();
                     const categoriesData = await loadCategories();
                     
+                    
                     setProducts(productsData || []);
                     setCategoriesList(categoriesData || []);
+                    
                 } else if (activeTab === 'pos') {
                     const storedProducts = await fetchProducts();
                     if (storedProducts && storedProducts.length > 0) {

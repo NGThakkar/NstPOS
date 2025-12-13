@@ -7,10 +7,11 @@ export const ShoppingCart = ({
     onUpdateQuantity,
     onRemoveItem,
     onCheckout,
-    onAddToCart
+    onAddToCart,
+    customers
 }) => {
     const [showClearConfirm, setShowClearConfirm] = useState(false);
-    const [selectedCustomer, setSelectedCustomer] = useState('walk-in');
+    const [selectedCustomer, setSelectedCustomer] = useState(3);
     const [showCustomerMenu, setShowCustomerMenu] = useState(false);
     const [showHoldListModal, setShowHoldListModal] = useState(false);
     const [holdOrders, setHoldOrders] = useState([]);
@@ -22,14 +23,24 @@ export const ShoppingCart = ({
     const tax = subtotal * taxRate;
     const total = subtotal + tax;
 
-    console.log('Rendering ShoppingCart with cart items:', cart);
+    //console.log('Rendering ShoppingCart with cart items:', cart);
 
     const customerOptions = [
-        { id: 'walk-in', name: 'Walk in Customer' },
-        { id: 'customer-1', name: 'John Smith' },
-        { id: 'customer-2', name: 'Sarah Johnson' },
-        { id: 'customer-3', name: 'Michael Brown' }
+        //{ id: 'walk-in', name: 'Walk in Customer' },
+        //{ id: 'customer-1', name: 'John Smith' },
+        //{ id: 'customer-2', name: 'Sarah Johnson' },
+        //{ id: 'customer-3', name: 'Michael Brown' }
     ];
+
+    customers.forEach(cust => {
+        if (!customerOptions.find(co => co.id === cust.customerId)) {
+            customerOptions.push({ id: cust.customerId, name: cust.fullName });
+        }
+    });
+
+    console.log('Available customers from props:', customers);
+    console.log('Customer options for selection:', customerOptions);
+    console.log('Selected customer ID:', selectedCustomer);
 
     const currentCustomer = customerOptions.find(c => c.id === selectedCustomer);
 

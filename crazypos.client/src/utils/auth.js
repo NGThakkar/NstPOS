@@ -63,8 +63,10 @@ export async function logoutUser(token) {
         }
 
         // Clear local storage
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
+        //localStorage.removeItem('authToken');
+        sessionStorage.removeItem('authToken');
+        //localStorage.removeItem('user');
+        sessionStorage.removeItem('user');
 
         return data;
     } catch (error) {

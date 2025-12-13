@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { loadProducts, loadCategories, saveTransaction } from '../utils/storage';
+import { loadProducts, loadCategories, saveTransaction, getAllCustomers } from '../utils/storage';
 import { Spinner } from './Spinner';
 import { ProductCatalog } from './ProductCatalog';
 import { ShoppingCart } from './ShoppingCart';
@@ -11,6 +11,7 @@ export const Sales = () => {
     const [cart, setCart] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [customers, setCustomers] = useState([]);
 
     // Load products and categories on mount
     useEffect(() => {
@@ -19,13 +20,16 @@ export const Sales = () => {
             try {
                 const productsData = await loadProducts();
                 const categoriesData = await loadCategories();
+                const customersData = await getAllCustomers();
                 
                 setProducts(productsData || []);
                 setCategories(categoriesData || []);
+                setCustomers(customersData || []);
             } catch (error) {
                 console.error('Failed to load products or categories:', error);
                 setProducts([]);
                 setCategories([]);
+                setCustomers([]);
             } finally {
                 setIsLoading(false);
             }
@@ -128,6 +132,7 @@ export const Sales = () => {
                         onRemoveItem={handleRemoveItem}
                         onCheckout={() => setShowPaymentModal(true)}
                         onAddToCart={handleAddToCart}
+                        customers={customers}
                     />
                 </div>
             </div>
