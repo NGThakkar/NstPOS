@@ -3,22 +3,25 @@ import { DollarSign, ShoppingCart, Users, TrendingUp,Dot } from 'lucide-react';
 
 export const Dashboard = ({ transactions, setActiveTab  }) => {
     const today = new Date().toDateString();
-    const todayTransactions = transactions.filter(t =>
-        new Date(t.timestamp).toDateString() === today
-    );
+    const todayTransactions = transactions.filter(t => {
+        // Handle both database and localStorage transaction formats
+        const transDate = t.transactionDate || t.timestamp;
+        return new Date(transDate).toDateString() === today;
+    });
 
-    const todaySales = todayTransactions.reduce((sum, t) => sum + t.total, 0);
+    const todaySales = todayTransactions.reduce((sum, t) => sum + (t.totalAmount || t.total || 0), 0);
     const todayOrders = todayTransactions.length;
     const avgOrderValue = todayOrders > 0 ? todaySales / todayOrders : 0;
 
     const thisWeek = transactions.filter(t => {
-        const transactionDate = new Date(t.timestamp);
+        const transDate = t.transactionDate || t.timestamp;
+        const transactionDate = new Date(transDate);
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
         return transactionDate >= weekAgo;
     });
 
-    const weekSales = thisWeek.reduce((sum, t) => sum + t.total, 0);
+    const weekSales = thisWeek.reduce((sum, t) => sum + (t.totalAmount || t.total || 0), 0);
 
     const stats = [
         {
@@ -81,20 +84,30 @@ export const Dashboard = ({ transactions, setActiveTab  }) => {
                 <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Transactions</h3>
                     <div className="space-y-3">
-                        {transactions.slice(-5).reverse().map((transaction) => (
-                            <div key={transaction.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                                <div>
-                                    <p className="font-medium text-gray-900">Transaction #{transaction.id.slice(-6)}</p>
-                                    <p className="text-sm text-gray-600 flex">
-                                        {new Date(transaction.timestamp).toLocaleTimeString()} <span className="flex align-middle"><Dot /></span>  {transaction.items.length} items
-                                    </p>
+                        {transactions.slice(-5).reverse().map((transaction) => {
+                            // Handle both database and localStorage formats
+                            const transId = transaction.transactionId || transaction.id || 'N/A';
+                            const transCode = transaction.transactionCode || (transaction.id && transaction.id.slice(-6)) || 'Unknown';
+                            const transDate = transaction.transactionDate || transaction.timestamp;
+                            const itemCount = transaction.itemCount || (transaction.items ? transaction.items.length : 0);
+                            const totalAmount = transaction.totalAmount || transaction.total || 0;
+                            const paymentMethod = transaction.paymentMethod || 'Unknown';
+
+                            return (
+                                <div key={transId} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                                    <div>
+                                        <p className="font-medium text-gray-900">Transaction #{transCode}</p>
+                                        <p className="text-sm text-gray-600 flex">
+                                            {new Date(transDate).toLocaleTimeString()} <span className="flex align-middle"><Dot /></span>  {itemCount} items
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-semibold text-gray-900">${totalAmount.toFixed(2)}</p>
+                                        <p className="text-sm text-gray-600">{paymentMethod}</p>
+                                    </div>
                                 </div>
-                                <div className="text-right">
-                                    <p className="font-semibold text-gray-900">${transaction.total.toFixed(2)}</p>
-                                    <p className="text-sm text-gray-600">{transaction.paymentMethod}</p>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                         {transactions.length === 0 && (
                             <p className="text-gray-500 text-center py-4">No transactions yet</p>
                         )}

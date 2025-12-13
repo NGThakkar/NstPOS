@@ -234,6 +234,7 @@ namespace CrazyPOS.Server.Controllers
                     var transaction = dbContext.SalesTransactions
                         .Include(t => t.TransactionItems)
                         .ThenInclude(ti => ti.Product)
+                        .Include(t => t.User)
                         .FirstOrDefault(t => t.TransactionId == transactionId);
 
                     if (transaction == null)
@@ -255,11 +256,12 @@ namespace CrazyPOS.Server.Controllers
                         ChangeAmount = transaction.ChangeAmount,
                         DiscountAmount = transaction.DiscountAmount,
                         Status = transaction.Status,
+                        Cashier = transaction.User?.FullName ?? "Unknown",
                         Items = transaction.TransactionItems.Select(ti => new TransactionItemDto
                         {
                             ItemId = ti.ItemId,
                             ProductId = ti.Productid,
-                            ProductName = ti.Product?.Name,
+                            ProductName = ti.Product.Name,
                             Quantity = ti.Quantity,
                             UnitPrice = ti.UnitPrice,
                             DiscountPercent = ti.DiscountPercent,
@@ -333,7 +335,7 @@ namespace CrazyPOS.Server.Controllers
                 using (var dbContext = _dbFactory.CreateDbContext())
                 {
                     var transactions = dbContext.SalesTransactions
-                        .Where(t => t.TransactionDate >= startDate && t.TransactionDate <= endDate)
+                        .Where(t => t.TransactionDate.Date >= startDate.Date && t.TransactionDate.Date <= endDate.Date)
                         .OrderByDescending(t => t.TransactionDate)
                         .Take(500)
                         .ToList();

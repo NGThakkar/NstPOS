@@ -45,8 +45,9 @@ export const Inventory = () => {
             setInventoryData(summary || []);
             setInventoryStats(stats);
             setLowStockItems(lowStock || []);
-        } catch (_error) {
+        } catch (error) {
             setMessage({ type: 'error', text: 'Failed to load inventory data' });
+            console.error('Error loading inventory:', error);
         } finally {
             setIsLoading(false);
         }
@@ -56,8 +57,8 @@ export const Inventory = () => {
         try {
             const data = await loadProducts();
             setProducts(data || []);
-        } catch (_error) {
-            console.error('Error loading products:', _error);
+        } catch (error) {
+            console.error('Error loading products:', error);
         }
     };
 
@@ -67,8 +68,9 @@ export const Inventory = () => {
             const history = await getInventoryMovementHistory(productId);
             setMovementHistory(history || []);
             setActiveTab('history');
-        } catch (_error) {
+        } catch (error) {
             setMessage({ type: 'error', text: 'Failed to load movement history' });
+            console.error('Error loading history:', error);
         } finally {
             setIsLoading(false);
         }

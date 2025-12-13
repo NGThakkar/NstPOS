@@ -15,6 +15,7 @@ namespace CrazyPOS.Server.Dto
         public decimal DiscountAmount { get; set; }
         public string Notes { get; set; }
         public string Status { get; set; }
+        public string Cashier { get; set; }
         public List<TransactionItemDto> Items { get; set; }
     }
 

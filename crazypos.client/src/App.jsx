@@ -20,7 +20,7 @@ import { Inventory } from './components/Inventory';
 import { Login } from './components/Login';
 import { Sales } from './components/Sales';
 import { sampleProducts } from './data/products';
-import { loadTransactions, saveTransaction, loadProducts, loadCategories } from './utils/storage';
+import { loadTransactionsFromDatabase, saveTransaction, loadProducts, loadCategories } from './utils/storage';
 import { getStoredToken, getStoredUser, logoutUser, isUserAuthenticated } from './utils/auth';
 
 function App() {
@@ -52,9 +52,9 @@ function App() {
         async function loadData() {
             setIsLoading(true);
             try {
-                // Always load transactions first
-                const storedTransactions = loadTransactions();
-                setTransactions(storedTransactions);
+                // Load transactions from database instead of localStorage
+                const dbTransactions = await loadTransactionsFromDatabase();
+                setTransactions(dbTransactions);
 
                 if (activeTab === 'sales') {
                     const productsData = await loadProducts();

@@ -1,10 +1,101 @@
 const API_BASE_URL_POS = "http://localhost:5053/api/POS";
 const API_BASE_URL_SALES = "http://localhost:5053/api/Sales";
 
+// NEW: Get full transaction details from backend
+export async function getTransactionDetails(transactionId) {
+    try {
+        const token = sessionStorage.getItem('authToken');
+        
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        // Add Authorization header if token exists
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+            headers['X-Auth-Token'] = token;
+        }
+
+        console.log('Fetching transaction details for ID:', transactionId);
+        
+        const response = await fetch(`${API_BASE_URL_SALES}/GetTransaction?transactionId=${transactionId}`, {
+            method: 'GET',
+            headers: headers
+        });
+
+        console.log('Transaction details response status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error fetching transaction details:', errorText);
+            throw new Error(`Error fetching transaction details: ${response.statusText}`);
+        }
+
+        const transactionDetails = await response.json();
+        console.log('Transaction details fetched:', transactionDetails);
+
+        return transactionDetails;
+    } catch (error) {
+        console.error('getTransactionDetails Error:', error);
+        throw error;
+    }
+}
+
 export const loadTransactions = () => {
     const stored = localStorage.getItem('craypos-transactions');
     return stored ? JSON.parse(stored) : [];
 };
+
+// NEW: Load transactions from backend database
+export async function loadTransactionsFromDatabase() {
+    try {
+        const token = sessionStorage.getItem('authToken');
+        
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        // Add Authorization header if token exists
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+            headers['X-Auth-Token'] = token;
+        }
+
+        // Get all transactions from the past year
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setFullYear(startDate.getFullYear() - 1);
+
+        const startDateStr = startDate.toISOString().split('T')[0];
+        const endDateStr = endDate.toISOString().split('T')[0];
+
+        console.log('Fetching transactions from database...');
+        console.log(`Date range: ${startDateStr} to ${endDateStr}`);
+        
+        const response = await fetch(`${API_BASE_URL_SALES}/GetTransactionsByDateRange?startDate=${startDateStr}&endDate=${endDateStr}`, {
+            method: 'GET',
+            headers: headers
+        });
+
+        console.log('Transactions response status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error fetching transactions:', errorText);
+            throw new Error(`Error fetching transactions: ${response.statusText}`);
+        }
+
+        const transactions = await response.json();
+        console.log('Transactions fetched from database:', transactions);
+
+        // Return transactions in the format expected by the app
+        return Array.isArray(transactions) ? transactions : [];
+    } catch (error) {
+        console.error('loadTransactionsFromDatabase Error:', error);
+        // Return empty array if database fetch fails
+        return [];
+    }
+}
 
 export const saveTransaction = async (transaction) => {
     const transactions = loadTransactions();
