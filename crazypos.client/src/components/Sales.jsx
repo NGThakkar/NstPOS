@@ -18,15 +18,23 @@ export const Sales = () => {
         async function loadData() {
             setIsLoading(true);
             try {
+                console.log('Sales component: Loading products and categories...');
                 const productsData = await loadProducts();
                 const categoriesData = await loadCategories();
                 const customersData = await getAllCustomers();
                 
-                setProducts(productsData || []);
-                setCategories(categoriesData || []);
-                setCustomers(customersData || []);
+                console.log('Sales component: Loaded', {
+                    products: productsData?.length || 0,
+                    categories: categoriesData?.length || 0,
+                    customers: customersData?.length || 0
+                });
+                
+                setProducts(Array.isArray(productsData) ? productsData : []);
+                setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+                setCustomers(Array.isArray(customersData) ? customersData : []);
             } catch (error) {
-                console.error('Failed to load products or categories:', error);
+                console.error('Sales component: Failed to load data:', error);
+                // Set empty arrays as fallback
                 setProducts([]);
                 setCategories([]);
                 setCustomers([]);
@@ -83,7 +91,9 @@ export const Sales = () => {
         setCart(prevCart => prevCart.filter(item => item.productid !== id));
     };
 
-    const handlePaymentComplete = (transaction) => {
+    const handlePaymentComplete = async (transaction) => {
+        console.log('Sales: handlePaymentComplete called with transaction:', transaction);
+        
         // Update inventory
         const updatedProducts = products.map(product => {
             const cartItem = cart.find(item => item.productid === product.productid);
@@ -96,13 +106,16 @@ export const Sales = () => {
         setProducts(updatedProducts);
         //saveProducts(updatedProducts);
 
-        // Save transaction
-        //const updatedTransactions = [...transactions, transaction];
-        //setTransactions(updatedTransactions);
-        saveTransaction(transaction);
+        // Save transaction and capture the result (which contains backend transaction ID)
+        console.log('Sales: Calling saveTransaction...');
+        const result = await saveTransaction(transaction);
+        console.log('Sales: saveTransaction returned result:', result);
 
         // Clear cart
         setCart([]);
+        
+        // Return the result so PaymentModal can access the backend transaction ID
+        return result;
     };
 
     if (isLoading) {

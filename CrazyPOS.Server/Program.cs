@@ -1,7 +1,8 @@
 using CrazyPOS.Server.Models;
+using CrazyPOS.Server.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models; // Add this using directive
-using Swashbuckle.AspNetCore.SwaggerGen; // Add this using directive
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Add Receipt Service
+builder.Services.AddScoped<IReceiptService, ReceiptService>();
 
 builder.Services.AddDbContextFactory<crazypos_devContext>(o =>
     o.UseSqlServer(builder.Configuration.GetConnectionString("Default"),

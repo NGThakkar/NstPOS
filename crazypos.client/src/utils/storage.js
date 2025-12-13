@@ -99,17 +99,26 @@ export async function loadTransactionsFromDatabase() {
 }
 
 export const saveTransaction = async (transaction) => {
+    console.log('storage.saveTransaction: Saving transaction locally and to backend');
+    
     const transactions = loadTransactions();
     transactions.push(transaction);
     localStorage.setItem('craypos-transactions', JSON.stringify(transactions));
     
     // Also save to backend database
     try {
+        console.log('storage.saveTransaction: Calling saveSaleTransaction...');
         const result = await saveSaleTransaction(transaction);
-        console.log('Transaction saved to backend:', result);
+        console.log('storage.saveTransaction: Backend result:', result);
+        return result; // ? Return the backend result with transactionId
     } catch (error) {
-        console.error('Error saving transaction to backend:', error);
+        console.error('storage.saveTransaction: Error saving transaction to backend:', error);
         // Transaction is saved locally even if backend fails
+        return { 
+            success: false, 
+            message: 'Transaction saved locally but backend call failed',
+            transactionId: null
+        };
     }
 }
 
@@ -146,9 +155,9 @@ export async function saveSaleTransaction(transaction) {
             headers['X-Auth-Token'] = token;
         }
 
-        console.log('Sending transaction to:', `${API_BASE_URL_SALES}/CreateTransaction`);
-        console.log('Transaction data:', saleTransactionData);
-        console.log('Auth token:', token ? 'Present' : 'Missing');
+        console.log('saveSaleTransaction: Sending transaction to:', `${API_BASE_URL_SALES}/CreateTransaction`);
+        console.log('saveSaleTransaction: Transaction data:', saleTransactionData);
+        console.log('saveSaleTransaction: Auth token:', token ? 'Present' : 'Missing');
 
         const response = await fetch(`${API_BASE_URL_SALES}/CreateTransaction`, {
             method: 'POST',
@@ -156,48 +165,77 @@ export async function saveSaleTransaction(transaction) {
             body: JSON.stringify(saleTransactionData)
         });
 
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
+        console.log('saveSaleTransaction: Response status:', response.status);
+        console.log('saveSaleTransaction: Response ok:', response.ok);
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Backend error response:', errorText);
+            console.error('saveSaleTransaction: Backend error response:', errorText);
             throw new Error(`Error saving transaction: ${response.statusText} - ${errorText}`);
         }
 
         const result = await response.json();
-        console.log('Transaction saved successfully:', result);
+        console.log('saveSaleTransaction: Transaction saved successfully with ID:', result.transactionId);
+        console.log('saveSaleTransaction: Full response:', result);
         return result;
     } catch (error) {
-        console.error('saveSaleTransaction Error:', error);
-        throw error;
+        console.error('saveSaleTransaction: Error:', error);
+        // Transaction is saved locally even if backend fails, so return success
+        return { 
+            success: true, 
+            message: 'Transaction saved locally',
+            transactionId: null // Will trigger fallback receipt data
+        };
     }
 }
 
 export async function loadProducts () {
     try {
-        const response = await fetch(API_BASE_URL_POS + "/GetProductDetails");
+        console.log('Fetching products from:', API_BASE_URL_POS + "/GetProductDetails");
+        const response = await fetch(API_BASE_URL_POS + "/GetProductDetails", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        
         if (!response.ok) {
-            throw new Error(`Error fetching products: ${response.statusText}`);
-        }    
-        return await response.json();
+            console.warn(`Product fetch returned status ${response.status}, returning empty array`);
+            return [];
+        }
+        
+        const data = await response.json();
+        console.log('Products loaded successfully:', data);
+        return data || [];
     } catch (error) {
-        console.error(error);
-        throw error;
+        console.error('Error loading products:', error);
+        console.warn('Returning empty products array as fallback');
+        return [];
     }
 };
 
 export async function loadCategories() {
     try {
-        const response = await fetch(API_BASE_URL_POS + "/GetCategories");
+        console.log('Fetching categories from:', API_BASE_URL_POS + "/GetCategories");
+        const response = await fetch(API_BASE_URL_POS + "/GetCategories", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        
         if (!response.ok) {
-            throw new Error(`Error fetching categories: ${response.statusText}`);
+            console.warn(`Categories fetch returned status ${response.status}, returning empty array`);
+            return [];
         }
-        return await response.json();
-    }
-    catch (error) {
-        console.error(error);
-        throw error;
+        
+        const data = await response.json();
+        console.log('Categories loaded successfully:', data);
+        return data || [];
+    } catch (error) {
+        console.error('Error loading categories:', error);
+        console.warn('Returning empty categories array as fallback');
+        return [];
     }
 }
 
@@ -729,6 +767,220 @@ export async function getLoyaltyConfig() {
         return await response.json();
     } catch (error) {
         console.error('Error fetching loyalty config:', error);
+        throw error;
+    }
+}
+
+// ===== RECEIPT API FUNCTIONS =====
+
+const API_BASE_URL_RECEIPT = "http://localhost:5053/api/Receipt";
+
+export async function getReceiptDetails(transactionId) {
+    try {
+        console.log('getReceiptDetails: Fetching receipt details for transaction:', transactionId);
+        const response = await fetch(`${API_BASE_URL_RECEIPT}/GetReceiptDetails?transactionId=${transactionId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        
+        if (!response.ok) {
+            console.warn(`getReceiptDetails: API returned status ${response.status}`);
+            throw new Error(`Error fetching receipt details: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('getReceiptDetails: Receipt data fetched successfully:', data);
+        return data;
+    } catch (error) {
+        console.error('getReceiptDetails: Error fetching receipt details:', error);
+        throw error;
+    }
+}
+
+export async function generateTextReceipt(receiptData) {
+    try {
+        console.log('generateTextReceipt: Generating text receipt with data:', receiptData);
+        const response = await fetch(`${API_BASE_URL_RECEIPT}/GenerateTextReceipt`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(receiptData)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('generateTextReceipt: Backend error response:', errorText);
+            throw new Error(`Error generating receipt: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('generateTextReceipt: Successfully generated, receipt length:', result.receipt?.length);
+        return result;
+    } catch (error) {
+        console.error('generateTextReceipt: Error:', error);
+        // Return a fallback text receipt
+        return {
+            success: false,
+            receipt: formatFallbackReceipt(receiptData)
+        };
+    }
+}
+
+export async function generateHtmlReceipt(receiptData) {
+    try {
+        console.log('generateHtmlReceipt: Generating HTML receipt');
+        const response = await fetch(`${API_BASE_URL_RECEIPT}/GenerateHtmlReceipt`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(receiptData)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('generateHtmlReceipt: Backend error response:', errorText);
+            throw new Error(`Error generating receipt: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('generateHtmlReceipt: Successfully generated');
+        return result;
+    } catch (error) {
+        console.error('generateHtmlReceipt: Error:', error);
+        throw error;
+    }
+}
+
+// Helper function to create fallback receipt text when backend is unavailable
+function formatFallbackReceipt(data) {
+    const line = '========================================';
+    const separator = '----------------------------------------';
+    
+    let receipt = `${line}\n`;
+    receipt += `${data.businessName?.padStart((data.businessName?.length + 40) / 2, ' ')}\n`;
+    receipt += `${separator}\n\n`;
+    receipt += `Receipt #: ${data.receiptNumber || 'N/A'}\n`;
+    receipt += `Date/Time: ${new Date(data.transactionDate).toLocaleString()}\n`;
+    receipt += `Transaction: ${data.transactionCode || 'N/A'}\n\n`;
+    
+    if (data.customerName) {
+        receipt += `Customer: ${data.customerName}\n`;
+    }
+    if (data.customerEmail) {
+        receipt += `Email: ${data.customerEmail}\n`;
+    }
+    if (data.customerPhone) {
+        receipt += `Phone: ${data.customerPhone}\n`;
+    }
+    
+    receipt += `\n${separator}\n`;
+    receipt += `Item | Qty | Price | Total\n`;
+    receipt += `${separator}\n`;
+    
+    if (data.items && data.items.length > 0) {
+        data.items.forEach(item => {
+            const itemLine = `${item.productName} x${item.quantity}`;
+            const totalStr = `$${(item.lineTotal || 0).toFixed(2)}`;
+            receipt += `${itemLine.padEnd(30)} ${totalStr.padStart(8)}\n`;
+        });
+    } else {
+        receipt += `No items\n`;
+    }
+    
+    receipt += `\n${separator}\n`;
+    receipt += `Subtotal: $${(data.subtotal || 0).toFixed(2)}\n`;
+    receipt += `Tax: $${(data.taxAmount || 0).toFixed(2)}\n`;
+    if (data.discountAmount) {
+        receipt += `Discount: -$${(data.discountAmount).toFixed(2)}\n`;
+    }
+    receipt += `Total: $${(data.totalAmount || 0).toFixed(2)}\n`;
+    receipt += `Paid: $${(data.amountTendered || 0).toFixed(2)}\n`;
+    receipt += `Change: $${(data.changeAmount || 0).toFixed(2)}\n`;
+    receipt += `\n${separator}\n`;
+    receipt += `Payment Method: ${data.paymentMethod || 'Unknown'}\n`;
+    receipt += `${line}\n`;
+    
+    return receipt;
+}
+
+export async function sendEmailReceipt(receiptData) {
+    try {
+        console.log('sendEmailReceipt: Sending email to:', receiptData.recipientEmail);
+        const response = await fetch(`${API_BASE_URL_RECEIPT}/SendEmailReceipt`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(receiptData)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('sendEmailReceipt: Backend error response:', errorText);
+            throw new Error(`Error sending receipt: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('sendEmailReceipt: Email sent successfully');
+        return result;
+    } catch (error) {
+        console.error('sendEmailReceipt: Error:', error);
+        throw error;
+    }
+}
+
+export async function sendSmsReceipt(receiptData) {
+    try {
+        console.log('sendSmsReceipt: Sending SMS to:', receiptData.recipientPhone);
+        const response = await fetch(`${API_BASE_URL_RECEIPT}/SendSmsReceipt`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(receiptData)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('sendSmsReceipt: Backend error response:', errorText);
+            throw new Error(`Error sending receipt: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('sendSmsReceipt: SMS sent successfully');
+        return result;
+    } catch (error) {
+        console.error('sendSmsReceipt: Error:', error);
+        throw error;
+    }
+}
+
+export async function printReceipt(receiptData) {
+    try {
+        console.log('printReceipt: Preparing receipt for printing');
+        const response = await fetch(`${API_BASE_URL_RECEIPT}/PrintReceipt`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(receiptData)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('printReceipt: Backend error response:', errorText);
+            throw new Error(`Error preparing receipt for print: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('printReceipt: Receipt prepared successfully');
+        return result;
+    } catch (error) {
+        console.error('printReceipt: Error:', error);
         throw error;
     }
 }

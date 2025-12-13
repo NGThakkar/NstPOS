@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, CreditCard, DollarSign, Smartphone, Check } from 'lucide-react';
+import { X, CreditCard, DollarSign, Smartphone, Check, Receipt } from 'lucide-react';
+import { ReceiptModal } from './ReceiptModal';
 
 export const PaymentModal = ({
     isOpen,
@@ -11,6 +12,8 @@ export const PaymentModal = ({
     const [cashReceived, setCashReceived] = useState('');
     const [processing, setProcessing] = useState(false);
     const [completed, setCompleted] = useState(false);
+    const [transactionId, setTransactionId] = useState(null);
+    const [showReceiptModal, setShowReceiptModal] = useState(false);
 
     if (!isOpen) return null;
 
@@ -48,22 +51,37 @@ export const PaymentModal = ({
                 cashier: 'Current User'
             };
 
-            // Call payment completion which will save transaction
-            onPaymentComplete(transaction);
+            console.log('PaymentModal: Calling onPaymentComplete with transaction:', transaction);
+            
+            // Call payment completion which will save transaction and return result
+            const result = await onPaymentComplete(transaction);
+            
+            console.log('PaymentModal: onPaymentComplete returned result:', result);
             
             setProcessing(false);
             setCompleted(true);
+            
+            // Use the backend transaction ID from response
+            // The backend returns { success, message, transactionId, transactionCode, totalAmount }
+            const backendTransactionId = result?.transactionId;
+            console.log('PaymentModal: Using backend transaction ID:', backendTransactionId);
+            setTransactionId(backendTransactionId);
 
             setTimeout(() => {
-                setCompleted(false);
-                onClose();
-                setCashReceived('');
-            }, 2000);
+                // Don't auto-close, let user choose receipt options
+            }, 500);
         } catch (error) {
             console.error('Payment error:', error);
             alert('Error processing payment: ' + error.message);
             setProcessing(false);
         }
+    };
+
+    const handleCloseAndReset = () => {
+        setCompleted(false);
+        onClose();
+        setCashReceived('');
+        setTransactionId(null);
     };
 
     const paymentMethods = [
@@ -72,9 +90,13 @@ export const PaymentModal = ({
         { id: 'mobile', name: 'Mobile Pay', icon: Smartphone }
     ];
 
+    if (completed && showReceiptModal && transactionId) {
+        return <ReceiptModal isOpen={true} transactionId={transactionId} onClose={handleCloseAndReset} />;
+    }
+
     if (completed) {
         return (
-            <div className="fixed inset-0 bg-gray-500/60 flex flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-gray-500/60 flex items-center justify-center z-50">
                 <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Check className="w-8 h-8 text-green-600" />
@@ -88,6 +110,22 @@ export const PaymentModal = ({
                             </p>
                         </div>
                     )}
+
+                    <div className="mt-6 space-y-3">
+                        <button
+                            onClick={() => setShowReceiptModal(true)}
+                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
+                        >
+                            <Receipt className="w-4 h-4 mr-2" />
+                            Send/Print Receipt
+                        </button>
+                        <button
+                            onClick={handleCloseAndReset}
+                            className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                        >
+                            Close
+                        </button>
+                    </div>
                 </div>
             </div>
         );

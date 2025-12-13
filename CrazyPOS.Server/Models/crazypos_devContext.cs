@@ -43,6 +43,8 @@ public partial class crazypos_devContext : DbContext
 
     public virtual DbSet<DailySalesSummary> DailySalesSummaries { get; set; }
 
+    public virtual DbSet<Receipt> Receipts { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -547,6 +549,49 @@ public partial class crazypos_devContext : DbContext
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
+        });
+
+        modelBuilder.Entity<Receipt>(entity =>
+        {
+            entity.ToTable("receipts");
+
+            entity.HasKey(e => e.ReceiptId).HasName("PK_receipts");
+
+            entity.HasIndex(e => e.TransactionId, "IX_receipts_transaction");
+            entity.HasIndex(e => e.Status, "IX_receipts_status");
+            entity.HasIndex(e => e.CreatedAt, "IX_receipts_created_at");
+
+            entity.Property(e => e.ReceiptId).HasColumnName("receipt_id");
+            entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
+            entity.Property(e => e.ReceiptNumber)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("receipt_number");
+            entity.Property(e => e.RecipientEmail)
+                .HasMaxLength(100)
+                .HasColumnName("recipient_email");
+            entity.Property(e => e.RecipientPhone)
+                .HasMaxLength(20)
+                .HasColumnName("recipient_phone");
+            entity.Property(e => e.DeliveryMethod).HasColumnName("delivery_method"); // 0=Print, 1=Email, 2=SMS, 3=WhatsApp
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.SentAt)
+                .HasColumnType("datetime")
+                .HasColumnName("sent_at");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasDefaultValue("Pending")
+                .HasColumnName("status");
+            entity.Property(e => e.Notes)
+                .HasColumnName("notes");
+
+            entity.HasOne(d => d.SalesTransaction)
+                .WithMany()
+                .HasForeignKey(d => d.TransactionId)
+                .HasConstraintName("FK_receipts_sales_transactions");
         });
 
         OnModelCreatingPartial(modelBuilder);

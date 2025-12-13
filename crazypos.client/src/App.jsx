@@ -23,7 +23,7 @@ import { Login } from './components/Login';
 import { Sales } from './components/Sales';
 import { sampleProducts } from './data/products';
 import { loadTransactionsFromDatabase, saveTransaction, loadProducts, loadCategories } from './utils/storage';
-import { getStoredToken, getStoredUser, logoutUser, isUserAuthenticated } from './utils/auth';
+import { getStoredToken, getStoredUser, logoutUser } from './utils/auth';
 
 function App() {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -102,16 +102,6 @@ function App() {
             console.error("Failed to fetch products from API, using local data.", error);
             setProducts(sampleProducts);
             //saveProducts(sampleProducts);
-        }
-    }
-
-    async function fetchCategories() {
-        try {
-            const apiCategories = await loadCategories();
-            //console.log(apiCategories);
-            setCategoriesList(apiCategories);
-        } catch (error) {
-            console.error("Failed to fetch products from API, using local data.", error);
         }
     }
 
