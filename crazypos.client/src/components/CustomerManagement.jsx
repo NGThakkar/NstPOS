@@ -104,11 +104,29 @@ export const CustomerManagement = () => {
         setIsLoading(true);
         try {
             if (selectedCustomer) {
-                // Update existing customer
-                await updateCustomer({
+                // Update existing customer - only send non-empty fields
+                const updateData = {
                     customerId: selectedCustomer.customerId,
-                    ...formData
-                });
+                    firstName: formData.firstName || undefined,
+                    lastName: formData.lastName || undefined,
+                    email: formData.email || undefined,
+                    phoneNumber: formData.phoneNumber || undefined,
+                    address: formData.address || undefined,
+                    city: formData.city || undefined,
+                    state: formData.state || undefined,
+                    zipCode: formData.zipCode || undefined,
+                    country: formData.country || undefined,
+                    dateOfBirth: formData.dateOfBirth || undefined,
+                    gender: formData.gender || undefined,
+                    notes: formData.notes || undefined
+                };
+                
+                // Remove undefined values
+                Object.keys(updateData).forEach(key => 
+                    updateData[key] === undefined && delete updateData[key]
+                );
+                
+                await updateCustomer(updateData);
                 setMessage({ type: 'success', text: 'Customer updated successfully' });
             } else {
                 // Create new customer

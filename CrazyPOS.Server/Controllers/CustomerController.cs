@@ -238,20 +238,36 @@ namespace CrazyPOS.Server.Controllers
                         return NotFound(new { success = false, message = "Customer not found" });
                     }
 
-                    customer.FirstName = customerDto.FirstName ?? customer.FirstName;
-                    customer.LastName = customerDto.LastName ?? customer.LastName;
-                    customer.Email = customerDto.Email ?? customer.Email;
-                    customer.PhoneNumber = customerDto.PhoneNumber ?? customer.PhoneNumber;
-                    customer.Address = customerDto.Address ?? customer.Address;
-                    customer.City = customerDto.City ?? customer.City;
-                    customer.State = customerDto.State ?? customer.State;
-                    customer.ZipCode = customerDto.ZipCode ?? customer.ZipCode;
-                    customer.Country = customerDto.Country ?? customer.Country;
-                    customer.DateOfBirth = customerDto.DateOfBirth != DateTime.MinValue ? customerDto.DateOfBirth : customer.DateOfBirth;
-                    customer.Gender = customerDto.Gender ?? customer.Gender;
-                    customer.LoyaltyStatus = customerDto.LoyaltyStatus ?? customer.LoyaltyStatus;
-                    customer.LoyaltyPoints = customerDto.LoyaltyPoints > 0 ? customerDto.LoyaltyPoints : customer.LoyaltyPoints;
-                    customer.Notes = customerDto.Notes ?? customer.Notes;
+                    // Only update fields that were provided (not null)
+                    if (!string.IsNullOrEmpty(customerDto.FirstName))
+                        customer.FirstName = customerDto.FirstName;
+                    if (!string.IsNullOrEmpty(customerDto.LastName))
+                        customer.LastName = customerDto.LastName;
+                    if (!string.IsNullOrEmpty(customerDto.Email))
+                        customer.Email = customerDto.Email;
+                    if (!string.IsNullOrEmpty(customerDto.PhoneNumber))
+                        customer.PhoneNumber = customerDto.PhoneNumber;
+                    if (!string.IsNullOrEmpty(customerDto.Address))
+                        customer.Address = customerDto.Address;
+                    if (!string.IsNullOrEmpty(customerDto.City))
+                        customer.City = customerDto.City;
+                    if (!string.IsNullOrEmpty(customerDto.State))
+                        customer.State = customerDto.State;
+                    if (!string.IsNullOrEmpty(customerDto.ZipCode))
+                        customer.ZipCode = customerDto.ZipCode;
+                    if (!string.IsNullOrEmpty(customerDto.Country))
+                        customer.Country = customerDto.Country;
+                    if (customerDto.DateOfBirth.HasValue && customerDto.DateOfBirth != DateTime.MinValue)
+                        customer.DateOfBirth = customerDto.DateOfBirth.Value;
+                    if (!string.IsNullOrEmpty(customerDto.Gender))
+                        customer.Gender = customerDto.Gender;
+                    if (!string.IsNullOrEmpty(customerDto.LoyaltyStatus))
+                        customer.LoyaltyStatus = customerDto.LoyaltyStatus;
+                    if (customerDto.LoyaltyPoints.HasValue && customerDto.LoyaltyPoints > 0)
+                        customer.LoyaltyPoints = customerDto.LoyaltyPoints.Value;
+                    if (!string.IsNullOrEmpty(customerDto.Notes))
+                        customer.Notes = customerDto.Notes;
+                    
                     customer.LastUpdated = DateTime.UtcNow;
 
                     dbContext.Customers.Update(customer);
