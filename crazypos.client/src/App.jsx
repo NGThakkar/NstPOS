@@ -37,7 +37,7 @@ function App() {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [categoriesList, setCategoriesList] = useState([]);
-    
+    const [transactionFilters, setTransactionFilters] = useState(null);
 
     useEffect(() => {
         // Check if user is already logged in
@@ -213,7 +213,7 @@ function App() {
             ]
         },
         { id: 'sales', name: 'Sales', icon: ShoppingCart },
-        { id: 'pos', name: 'Point of Sale (Legacy)', icon: ShoppingCart },
+        //{ id: 'pos', name: 'Point of Sale (Legacy)', icon: ShoppingCart },
         { id: 'inventory', name: 'Inventory', icon: Package },
         { id: 'customers', name: 'Customers', icon: Users },
         { id: 'transactions', name: 'Transactions', icon: History },
@@ -229,7 +229,7 @@ function App() {
                         <Spinner />
                     </div>
                 </>
-                ) : (<Dashboard transactions={transactions} setActiveTab={setActiveTab} />)}</>);
+                ) : (<Dashboard transactions={transactions} setActiveTab={setActiveTab} setTransactionFilters={setTransactionFilters} />)}</>);
             case 'sales':
                 return (
                     <>
@@ -280,7 +280,7 @@ function App() {
                     </>
                 );
             case 'transactions':
-                return (<> {isLoading ? (<><Spinner /> </>) : (<TransactionHistory transactions={transactions} /> )}</>);
+                return (<> {isLoading ? (<><Spinner /> </>) : (<TransactionHistory transactions={transactions} initialFilters={transactionFilters} /> )}</>);
             case 'customers':
                 return (<>
                     {isLoading ? (

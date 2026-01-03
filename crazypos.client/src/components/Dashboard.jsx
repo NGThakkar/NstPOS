@@ -1,7 +1,7 @@
 import React from 'react';
-import { DollarSign, ShoppingCart, Users, TrendingUp,Dot } from 'lucide-react';
+import { DollarSign, ShoppingCart, Users, TrendingUp, Dot } from 'lucide-react';
 
-export const Dashboard = ({ transactions, setActiveTab  }) => {
+export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters }) => {
     const today = new Date().toDateString();
     const todayTransactions = transactions.filter(t => {
         // Handle both database and localStorage transaction formats
@@ -23,13 +23,43 @@ export const Dashboard = ({ transactions, setActiveTab  }) => {
 
     const weekSales = thisWeek.reduce((sum, t) => sum + (t.totalAmount || t.total || 0), 0);
 
+    // Handle Today's Sales click
+    const handleTodaySalesClick = () => {
+        const today = new Date().toISOString().split('T')[0];
+        setTransactionFilters({
+            fromDate: today,
+            toDate: today,
+            selectedCustomer: ''
+        });
+        setActiveTab('transactions');
+    };
+
+    // Handle Week Sales click
+    const handleWeekSalesClick = () => {
+        const today = new Date();
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        
+        const fromDate = weekAgo.toISOString().split('T')[0];
+        const toDate = today.toISOString().split('T')[0];
+        
+        setTransactionFilters({
+            fromDate: fromDate,
+            toDate: toDate,
+            selectedCustomer: ''
+        });
+        setActiveTab('transactions');
+    };
+
     const stats = [
         {
             title: "Today's Sales",
             value: `$${todaySales.toFixed(2)}`,
             icon: DollarSign,
             change: '+12.5%',
-            positive: true
+            positive: true,
+            onClick: handleTodaySalesClick,
+            clickable: true
         },
         {
             title: 'Orders Today',
@@ -50,7 +80,9 @@ export const Dashboard = ({ transactions, setActiveTab  }) => {
             value: `$${weekSales.toFixed(2)}`,
             icon: TrendingUp,
             change: '+23.1%',
-            positive: true
+            positive: true,
+            onClick: handleWeekSalesClick,
+            clickable: true
         }
     ];
 
@@ -63,7 +95,15 @@ export const Dashboard = ({ transactions, setActiveTab  }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {stats.map((stat, index) => (
-                    <div key={index} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div
+                        key={index}
+                        onClick={stat.clickable ? stat.onClick : undefined}
+                        className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${
+                            stat.clickable 
+                                ? 'hover:shadow-lg hover:border-blue-300 cursor-pointer transition-all duration-200 transform hover:scale-105' 
+                                : 'hover:shadow-md transition-shadow'
+                        }`}
+                    >
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-gray-600">{stat.title}</p>
@@ -71,6 +111,9 @@ export const Dashboard = ({ transactions, setActiveTab  }) => {
                                 <p className={`text-xs mt-1 ${stat.positive ? 'text-green-600' : 'text-red-600'}`}>
                                     {stat.change} from yesterday
                                 </p>
+                                {stat.clickable && (
+                                    <p className="text-xs text-blue-600 mt-2 font-medium">Click to view details ?</p>
+                                )}
                             </div>
                             <div className={`p-3 rounded-full ${stat.positive ? 'bg-green-100' : 'bg-red-100'}`}>
                                 <stat.icon className={`w-6 h-6 ${stat.positive ? 'text-green-600' : 'text-red-600'}`} />
@@ -82,7 +125,7 @@ export const Dashboard = ({ transactions, setActiveTab  }) => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Transactions</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent 5 Transactions</h3>
                     <div className="space-y-3">
                         {transactions.slice(-5).reverse().map((transaction) => {
                             // Handle both database and localStorage formats
@@ -98,7 +141,7 @@ export const Dashboard = ({ transactions, setActiveTab  }) => {
                                     <div>
                                         <p className="font-medium text-gray-900">Transaction #{transCode}</p>
                                         <p className="text-sm text-gray-600 flex">
-                                            {new Date(transDate).toLocaleTimeString()} <span className="flex align-middle"><Dot /></span>  {itemCount} items
+                                            {new Date(transDate).toLocaleString()} <span className="flex align-middle"><Dot /></span>  {itemCount} items
                                         </p>
                                     </div>
                                     <div className="text-right">
@@ -117,7 +160,7 @@ export const Dashboard = ({ transactions, setActiveTab  }) => {
                 <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
                     <div className="space-y-3">
-                        <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <button onClick={() => { setActiveTab('sales') }} className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                             New Sale
                         </button>
                         <button onClick={() => { setActiveTab('addproduct')} } className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium">

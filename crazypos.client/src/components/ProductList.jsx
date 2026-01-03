@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Edit2, Trash2, AlertCircle, CheckCircle, Plus, X } from 'lucide-react';
+import { Edit2, Trash2, AlertCircle, CheckCircle, Plus, X, Search, Filter } from 'lucide-react';
 import { loadProducts, loadCategories, addProduct, updateProduct, deleteProduct } from '../utils/storage';
 
 export const ProductList = () => {
@@ -12,6 +12,16 @@ export const ProductList = () => {
     const [editingId, setEditingId] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     
+    // Filter state
+    const [filters, setFilters] = useState({
+        searchTerm: '',
+        categoryId: '',
+        stockStatus: '', // 'all', 'inStock', 'lowStock', 'outOfStock'
+        minPrice: '',
+        maxPrice: '',
+        showFilters: false
+    });
+
     const [formData, setFormData] = useState({
         productid: '',
         name: '',
@@ -42,6 +52,59 @@ export const ProductList = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // Filter products based on all active filters
+    const filteredProducts = products.filter(product => {
+        // Search filter (name or barcode)
+        if (filters.searchTerm) {
+            const searchLower = filters.searchTerm.toLowerCase();
+            const matchesSearch = 
+                product.name.toLowerCase().includes(searchLower) ||
+                (product.barcode && product.barcode.includes(searchLower));
+            if (!matchesSearch) return false;
+        }
+
+        // Category filter
+        if (filters.categoryId && product.categoryid !== parseInt(filters.categoryId)) {
+            return false;
+        }
+
+        // Stock status filter
+        if (filters.stockStatus) {
+            if (filters.stockStatus === 'inStock' && product.stock <= 0) return false;
+            if (filters.stockStatus === 'lowStock' && (product.stock <= 0 || product.stock > 10)) return false;
+            if (filters.stockStatus === 'outOfStock' && product.stock > 0) return false;
+        }
+
+        // Price range filter
+        if (filters.minPrice && product.price < parseFloat(filters.minPrice)) {
+            return false;
+        }
+        if (filters.maxPrice && product.price > parseFloat(filters.maxPrice)) {
+            return false;
+        }
+
+        return true;
+    });
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const resetFilters = () => {
+        setFilters({
+            searchTerm: '',
+            categoryId: '',
+            stockStatus: '',
+            minPrice: '',
+            maxPrice: '',
+            showFilters: false
+        });
     };
 
     const handleEdit = (product) => {
@@ -343,16 +406,138 @@ export const ProductList = () => {
                 </div>
             )}
 
+            {/* Filters Section */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <button
+                    onClick={() => setFilters(prev => ({ ...prev, showFilters: !prev.showFilters }))}
+                    className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium mb-4"
+                >
+                    <Filter className="w-5 h-5" />
+                    Filters
+                    <span className="text-sm text-gray-500">
+                        {filteredProducts.length} results
+                    </span>
+                </button>
+
+                {filters.showFilters && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        {/* Search Filter */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Search
+                            </label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    name="searchTerm"
+                                    placeholder="Name or barcode..."
+                                    value={filters.searchTerm}
+                                    onChange={handleFilterChange}
+                                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Category Filter */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Category
+                            </label>
+                            <select
+                                name="categoryId"
+                                value={filters.categoryId}
+                                onChange={handleFilterChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">All Categories</option>
+                                {categories.map(cat => (
+                                    <option key={cat.categoryid} value={cat.categoryid}>
+                                        {cat.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Stock Status Filter */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Stock Status
+                            </label>
+                            <select
+                                name="stockStatus"
+                                value={filters.stockStatus}
+                                onChange={handleFilterChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">All Stock Status</option>
+                                <option value="inStock">In Stock (>10)</option>
+                                <option value="lowStock">Low Stock (1-10)</option>
+                                <option value="outOfStock">Out of Stock</option>
+                            </select>
+                        </div>
+
+                        {/* Min Price Filter */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Min Price
+                            </label>
+                            <input
+                                type="number"
+                                name="minPrice"
+                                placeholder="$0.00"
+                                value={filters.minPrice}
+                                onChange={handleFilterChange}
+                                min="0"
+                                step="0.01"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+
+                        {/* Max Price Filter */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Max Price
+                            </label>
+                            <input
+                                type="number"
+                                name="maxPrice"
+                                placeholder="$9999.99"
+                                value={filters.maxPrice}
+                                onChange={handleFilterChange}
+                                min="0"
+                                step="0.01"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+
+                        {/* Reset Filters Button */}
+                        <div className="flex items-end">
+                            <button
+                                onClick={resetFilters}
+                                className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                            >
+                                Reset Filters
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
             {/* Products Table */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
-                ) : products.length === 0 ? (
+                ) : filteredProducts.length === 0 ? (
                     <div className="text-center py-12">
                         <p className="text-gray-500 text-lg">No products found</p>
-                        <p className="text-gray-400">Click on "Add Product" to create one</p>
+                        {Object.values(filters).some(v => v && v !== false) ? (
+                            <p className="text-gray-400">Try adjusting your filters</p>
+                        ) : (
+                            <p className="text-gray-400">Click on "Add Product" to create one</p>
+                        )}
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
@@ -383,7 +568,7 @@ export const ProductList = () => {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {products.map(product => (
+                                {filteredProducts.map(product => (
                                     <tr key={product.productid} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {product.image ? (

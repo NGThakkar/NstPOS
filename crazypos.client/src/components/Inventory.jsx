@@ -22,12 +22,12 @@ export const Inventory = () => {
     const [movementForm, setMovementForm] = useState({
         productid: '',
         quantityChange: '',
-        movementType: 'Purchase',
+        movementType: '',
         reference: '',
         notes: ''
     });
 
-    const movementTypes = ['Purchase', 'Sale', 'Adjustment', 'Return'];
+    const movementTypes = ['Adjustment', 'Breakage','Refurbish'];
 
     useEffect(() => {
         loadInventoryData();
@@ -120,7 +120,7 @@ export const Inventory = () => {
             setMovementForm({
                 productid: '',
                 quantityChange: '',
-                movementType: 'Purchase',
+                movementType: '',
                 reference: '',
                 notes: ''
             });
