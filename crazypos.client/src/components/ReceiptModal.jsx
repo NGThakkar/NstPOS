@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, Printer, Mail, MessageSquare, Copy, CheckCircle, AlertCircle } from 'lucide-react';
-import { getReceiptDetails, generateTextReceipt, sendEmailReceipt, sendSmsReceipt, printReceipt } from '../utils/storage';
+import { X, Printer, Mail, MessageSquare, Copy, CheckCircle, AlertCircle, Download } from 'lucide-react';
+import { getReceiptDetails, generateTextReceipt, generateHtmlReceipt, sendEmailReceipt, sendSmsReceipt } from '../utils/storage';
 
 export const ReceiptModal = ({ isOpen, transactionId, onClose }) => {
     const [receiptData, setReceiptData] = useState(null);
     const [receiptText, setReceiptText] = useState('');
+    const [receiptHtml, setReceiptHtml] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [activeTab, setActiveTab] = useState('options'); // options, preview
@@ -71,27 +72,260 @@ export const ReceiptModal = ({ isOpen, transactionId, onClose }) => {
         }
     };
 
+    // Generate printable HTML directly without backend call
+    const generatePrintableHtml = (data) => {
+        return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Receipt ${data.receiptNumber}</title>
+                <style>
+                    body {
+                        font-family: 'Courier New', monospace;
+                        margin: 0;
+                        padding: 20px;
+                        width: 80mm;
+                    }
+                    .receipt {
+                        width: 100%;
+                        text-align: center;
+                    }
+                    .header {
+                        margin-bottom: 20px;
+                        border-bottom: 1px dashed #000;
+                        padding-bottom: 10px;
+                    }
+                    .business-name {
+                        font-weight: bold;
+                        font-size: 16px;
+                        margin-bottom: 5px;
+                    }
+                    .business-info {
+                        font-size: 11px;
+                        line-height: 1.4;
+                    }
+                    .receipt-meta {
+                        font-size: 11px;
+                        margin: 10px 0;
+                        border-bottom: 1px dashed #000;
+                        padding-bottom: 10px;
+                    }
+                    .items {
+                        margin: 15px 0;
+                        text-align: left;
+                    }
+                    .item-header {
+                        font-weight: bold;
+                        font-size: 11px;
+                        border-bottom: 1px solid #000;
+                        padding-bottom: 5px;
+                        margin-bottom: 5px;
+                    }
+                    .item-row {
+                        font-size: 11px;
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 3px;
+                    }
+                    .item-name {
+                        flex: 1;
+                    }
+                    .item-qty {
+                        width: 30px;
+                        text-align: center;
+                    }
+                    .item-price {
+                        width: 50px;
+                        text-align: right;
+                    }
+                    .totals {
+                        margin: 15px 0;
+                        font-size: 11px;
+                        text-align: right;
+                        border-top: 1px solid #000;
+                        padding-top: 10px;
+                    }
+                    .total-row {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 3px;
+                    }
+                    .final-total {
+                        font-weight: bold;
+                        font-size: 13px;
+                        margin-top: 5px;
+                        border-bottom: 1px dashed #000;
+                        padding-bottom: 5px;
+                    }
+                    .footer {
+                        margin-top: 15px;
+                        font-size: 11px;
+                        text-align: center;
+                    }
+                    .thank-you {
+                        margin-top: 10px;
+                        font-weight: bold;
+                    }
+                    @media print {
+                        body {
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .receipt {
+                            width: auto;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="receipt">
+                    <div class="header">
+                        <div class="business-name">${data.businessName || 'CrazyPOS Store'}</div>
+                        <div class="business-info">
+                            <div>${data.businessAddress || ''}</div>
+                            <div>Ph: ${data.businessPhone || ''}</div>
+                            <div>Email: ${data.businessEmail || ''}</div>
+                        </div>
+                    </div>
+
+                    <div class="receipt-meta">
+                        <div><strong>Receipt #:</strong> ${data.receiptNumber || 'N/A'}</div>
+                        <div><strong>Date/Time:</strong> ${new Date(data.transactionDate).toLocaleString()}</div>
+                        <div><strong>Transaction:</strong> ${data.transactionCode || 'N/A'}</div>
+                        <div><strong>Cashier:</strong> ${data.cashierName || 'System'}</div>
+                    </div>
+
+                    ${data.customerName && data.customerName !== 'Walk-in Customer' ? `
+                        <div style="font-size: 11px; margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 10px;">
+                            <strong>Customer:</strong> ${data.customerName}
+                            ${data.customerPhone ? `<div>Phone: ${data.customerPhone}</div>` : ''}
+                            ${data.customerEmail ? `<div>Email: ${data.customerEmail}</div>` : ''}
+                        </div>
+                    ` : ''}
+
+                    <div class="items">
+                        <div class="item-header">
+                            <span class="item-name">Item</span>
+                            <span class="item-qty">Qty</span>
+                            <span class="item-price">Total</span>
+                        </div>
+                        ${data.items && data.items.length > 0 
+                            ? data.items.map(item => `
+                                <div class="item-row">
+                                    <span class="item-name">${item.productName || 'Unknown'}</span>
+                                    <span class="item-qty">${item.quantity}</span>
+                                    <span class="item-price">$${(item.lineTotal || 0).toFixed(2)}</span>
+                                </div>
+                                <div style="font-size: 10px; color: #666; margin-left: 10px;">@ $${(item.unitPrice || 0).toFixed(2)}</div>
+                            `).join('')
+                            : '<div style="text-align: center; font-size: 11px; color: #999;">No items</div>'
+                        }
+                    </div>
+
+                    <div class="totals">
+                        <div class="total-row">
+                            <span>Subtotal:</span>
+                            <span>$${(data.subtotal || 0).toFixed(2)}</span>
+                        </div>
+                        ${data.discountAmount && data.discountAmount > 0 ? `
+                            <div class="total-row">
+                                <span>Discount:</span>
+                                <span>-$${(data.discountAmount).toFixed(2)}</span>
+                            </div>
+                        ` : ''}
+                        <div class="total-row">
+                            <span>Tax:</span>
+                            <span>$${(data.taxAmount || 0).toFixed(2)}</span>
+                        </div>
+                        <div class="final-total">
+                            <div class="total-row">
+                                <span>TOTAL:</span>
+                                <span>$${(data.totalAmount || 0).toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <div class="total-row" style="margin-top: 10px;">
+                            <span>Amount Tendered:</span>
+                            <span>$${(data.amountTendered || 0).toFixed(2)}</span>
+                        </div>
+                        ${data.changeAmount && data.changeAmount > 0 ? `
+                            <div class="total-row">
+                                <span><strong>Change:</strong></span>
+                                <span><strong>$${(data.changeAmount).toFixed(2)}</strong></span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="footer">
+                        <div><strong>Payment Method:</strong> ${data.paymentMethod || 'Unknown'}</div>
+                        <div class="thank-you">Thank You for Your Purchase!</div>
+                        <div style="margin-top: 10px; font-size: 10px;">Powered by CrazyPOS</div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+    };
+
     const handlePrint = async () => {
         setIsLoading(true);
         try {
-            const result = await printReceipt(receiptData);
-            setActiveTab('preview');
-            
-            // Auto-print after a brief delay
-            setTimeout(() => {
+            console.log('handlePrint: Generating printable HTML');
+            if (!receiptHtml) {
+                const html = generatePrintableHtml(receiptData);
+                setReceiptHtml(html);
+                
+                // Open print window
                 const printWindow = window.open('', '', 'height=800,width=600');
-                printWindow.document.write(result.html);
+                printWindow.document.write(html);
                 printWindow.document.close();
-                printWindow.print();
-            }, 500);
+                
+                // Trigger print after content is loaded
+                setTimeout(() => {
+                    printWindow.print();
+                }, 500);
+            } else {
+                // If HTML is already generated, just print it
+                const printWindow = window.open('', '', 'height=800,width=600');
+                printWindow.document.write(receiptHtml);
+                printWindow.document.close();
+                setTimeout(() => printWindow.print(), 500);
+            }
             
-            setMessage({ type: 'success', text: 'Receipt ready for printing' });
+            setMessage({ type: 'success', text: 'Receipt opened for printing' });
             setTimeout(() => setMessage({ type: '', text: '' }), 3000);
         } catch (error) {
             console.error('handlePrint error:', error);
-            setMessage({ type: 'error', text: 'Failed to prepare receipt for printing' });
+            setMessage({ type: 'error', text: 'Failed to prepare receipt for printing: ' + error.message });
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleDownloadPDF = () => {
+        try {
+            console.log('handleDownloadPDF: Generating PDF');
+            if (!receiptData) {
+                setMessage({ type: 'error', text: 'No receipt data available' });
+                return;
+            }
+
+            const html = generatePrintableHtml(receiptData);
+            
+            // Create a blob and download
+            const element = document.createElement('a');
+            const file = new Blob([html], { type: 'text/html' });
+            element.href = URL.createObjectURL(file);
+            element.download = `Receipt_${receiptData.receiptNumber}_${Date.now()}.html`;
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+
+            setMessage({ type: 'success', text: 'Receipt downloaded successfully' });
+            setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+        } catch (error) {
+            console.error('handleDownloadPDF error:', error);
+            setMessage({ type: 'error', text: 'Failed to download receipt: ' + error.message });
         }
     };
 
@@ -273,10 +507,30 @@ export const ReceiptModal = ({ isOpen, transactionId, onClose }) => {
                                     </div>
                                     <button
                                         onClick={handlePrint}
-                                        disabled={isLoading}
+                                        disabled={isLoading || !receiptData}
                                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
                                     >
                                         Print
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Download Option */}
+                            <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <Download className="w-6 h-6 text-indigo-600" />
+                                        <div>
+                                            <h4 className="font-medium text-gray-900">Download Receipt</h4>
+                                            <p className="text-sm text-gray-600">Download receipt as HTML file</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={handleDownloadPDF}
+                                        disabled={isLoading || !receiptData}
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 font-medium"
+                                    >
+                                        Download
                                     </button>
                                 </div>
                             </div>
@@ -367,7 +621,7 @@ export const ReceiptModal = ({ isOpen, transactionId, onClose }) => {
                                     </div>
                                     <button
                                         onClick={handleCopyToClipboard}
-                                        disabled={isLoading}
+                                        disabled={isLoading || !receiptData}
                                         className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 font-medium"
                                     >
                                         Copy
@@ -376,7 +630,7 @@ export const ReceiptModal = ({ isOpen, transactionId, onClose }) => {
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm text-gray-900 overflow-x-auto max-h-96 overflow-y-auto whitespace-pre-wrap break-words">
+                        <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm text-gray-900 overflow-x-auto max-h-96 overflow-y-auto whitespace-pre-wrap break-words border border-gray-200">
                             {receiptText || 'Loading receipt...'}
                         </div>
                     )}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Calendar, Eye, Receipt, Download, Filter, X } from 'lucide-react';
 import { getTransactionDetails } from '../utils/storage';
+import * as XLSX from 'xlsx';
 
 export const TransactionHistory = ({ transactions, initialFilters = null }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -10,6 +11,7 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [showFilters, setShowFilters] = useState(initialFilters ? true : false);
+    const [isExporting, setIsExporting] = useState(false);
 
     // Get unique customers from transactions
     const getUniqueCustomers = () => {
@@ -25,7 +27,7 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
         // Handle both database and localStorage formats
         const transId = transaction.transactionCode || transaction.id || '';
         const transDate = transaction.transactionDate || transaction.timestamp;
-        const cashier = transaction.cashier || '';
+        const cashier = transaction.cashier || transaction.cashierName || '';
         const customerName = transaction.customerName || transaction.customer || 'Walk-in Customer';
         
         // Search filter (transaction ID or cashier)
@@ -84,6 +86,110 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
 
     const hasActiveFilters = searchTerm || fromDate || toDate || selectedCustomer;
 
+    // Export to Excel
+    const handleExportToExcel = () => {
+        try {
+            setIsExporting(true);
+            console.log('Exporting transactions to Excel...');
+
+            // Prepare data for Excel
+            const excelData = filteredTransactions.map(transaction => {
+                const transId = transaction.transactionId || transaction.id || 'N/A';
+                const transCode = transaction.transactionCode || (transaction.id && transaction.id.slice(-8)) || 'Unknown';
+                const transDate = transaction.transactionDate || transaction.timestamp;
+                const itemCount = transaction.itemCount || (transaction.items ? transaction.items.length : 0);
+                const paymentMethod = transaction.paymentMethod || 'Unknown';
+                const totalAmount = transaction.totalAmount || transaction.total || 0;
+                const customerName = transaction.customerName || transaction.customer || 'Walk-in Customer';
+                
+                // Try multiple fields for cashier name
+                let cashier = transaction.cashier || transaction.cashierName || transaction.user?.fullName || 'Unknown';
+                
+                // If cashier is a notes field from localStorage, extract it
+                if (cashier && cashier.toLowerCase().startsWith('cashier:')) {
+                    cashier = cashier.replace(/^cashier:\s*/i, '').trim();
+                }
+                
+                const taxAmount = transaction.taxAmount || transaction.tax || 0;
+                const discountAmount = transaction.discountAmount || transaction.discount || 0;
+
+                return {
+                    'Transaction ID': `#${transCode}`,
+                    'Date & Time': new Date(transDate).toLocaleString(),
+                    'Customer': customerName,
+                    'Cashier': cashier,
+                    'Items': itemCount,
+                    'Subtotal': (totalAmount - taxAmount + discountAmount).toFixed(2),
+                    'Tax': taxAmount.toFixed(2),
+                    'Discount': discountAmount.toFixed(2),
+                    'Total': totalAmount.toFixed(2),
+                    'Payment Method': paymentMethod
+                };
+            });
+
+            // Create a new workbook
+            const ws = XLSX.utils.json_to_sheet(excelData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Transactions');
+
+            // Add summary section
+            const summaryData = [
+                ['TRANSACTION SUMMARY'],
+                [''],
+                ['Total Transactions:', filteredTransactions.length],
+                ['Total Sales:', `$${totalSales.toFixed(2)}`],
+                ['Total Tax:', `$${totalTax.toFixed(2)}`],
+                ['Average Transaction:', `$${(totalSales / filteredTransactions.length || 0).toFixed(2)}`],
+                [''],
+                ['Filter Information:'],
+                ['Search Term:', searchTerm || 'None'],
+                ['From Date:', fromDate || 'No filter'],
+                ['To Date:', toDate || 'No filter'],
+                ['Customer:', selectedCustomer || 'All customers'],
+            ];
+
+            const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+            XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+            // Set column widths
+            const columnWidths = [
+                { wch: 18 }, // Transaction ID
+                { wch: 25 }, // Date & Time
+                { wch: 20 }, // Customer
+                { wch: 15 }, // Cashier
+                { wch: 8 },  // Items
+                { wch: 12 }, // Subtotal
+                { wch: 12 }, // Tax
+                { wch: 12 }, // Discount
+                { wch: 12 }, // Total
+                { wch: 15 }  // Payment Method
+            ];
+            ws['!cols'] = columnWidths;
+
+            // Generate filename with date and filter info
+            let filename = 'Transactions';
+            if (fromDate && toDate) {
+                filename += `_${fromDate}_to_${toDate}`;
+            } else if (fromDate) {
+                filename += `_from_${fromDate}`;
+            } else if (toDate) {
+                filename += `_to_${toDate}`;
+            }
+            filename += `_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+            // Write the file
+            XLSX.writeFile(wb, filename);
+
+            console.log(`Successfully exported ${filteredTransactions.length} transactions to ${filename}`);
+            alert(`Successfully exported ${filteredTransactions.length} transactions to ${filename}`);
+            setIsExporting(false);
+        } catch (error) {
+            console.error('Error exporting to Excel:', error);
+            alert(`Failed to export: ${error.message}`);
+            setIsExporting(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div>
@@ -119,9 +225,14 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                         )}
                     </button>
 
-                    <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center whitespace-nowrap">
+                    <button
+                        onClick={handleExportToExcel}
+                        disabled={isExporting || filteredTransactions.length === 0}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={filteredTransactions.length === 0 ? 'No transactions to export' : 'Export filtered transactions to Excel'}
+                    >
                         <Download className="w-4 h-4 mr-2" />
-                        Export
+                        {isExporting ? 'Exporting...' : 'Export'}
                     </button>
                 </div>
 
@@ -249,6 +360,14 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                                 const paymentMethod = transaction.paymentMethod || 'Unknown';
                                 const totalAmount = transaction.totalAmount || transaction.total || 0;
                                 const customerName = transaction.customerName || transaction.customer || 'Walk-in Customer';
+                                
+                                // Try multiple fields for cashier name
+                                let cashier = transaction.cashier || transaction.cashierName || transaction.user?.fullName || 'Unknown';
+                                
+                                // If cashier is a notes field from localStorage, extract it
+                                if (cashier && cashier.toLowerCase().startsWith('cashier:')) {
+                                    cashier = cashier.replace(/^cashier:\s*/i, '').trim();
+                                }
 
                                 return (
                                     <tr key={transId} className="hover:bg-gray-50">
@@ -276,6 +395,7 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                                                     onClick={() => handleViewDetails(transaction)}
                                                     disabled={loadingDetails}
                                                     className="text-blue-600 hover:text-blue-800 transition-colors disabled:opacity-50"
+                                                    title={`View details - Cashier: ${cashier}`}
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </button>
