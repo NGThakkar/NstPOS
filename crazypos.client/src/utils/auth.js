@@ -10,10 +10,17 @@ export async function loginUser(username, password) {
             body: JSON.stringify({ username, password })
         });
 
-        const data = await response.json();
+        const contentType = response.headers.get("content-type");
+        let data;
+        
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() || 'Unknown error' };
+        }
         
         if (!response.ok) {
-            throw new Error(data.message || 'Login failed');
+            throw new Error(data.message || `HTTP Error: ${response.status}`);
         }
 
         return data;
@@ -33,10 +40,17 @@ export async function registerUser(userData) {
             body: JSON.stringify(userData)
         });
 
-        const data = await response.json();
+        const contentType = response.headers.get("content-type");
+        let data;
+        
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() || 'Unknown error' };
+        }
 
         if (!response.ok) {
-            throw new Error(data.message || 'Registration failed');
+            throw new Error(data.message || `HTTP Error: ${response.status}`);
         }
 
         return data;
@@ -56,16 +70,21 @@ export async function logoutUser(token) {
             body: JSON.stringify({ token })
         });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Logout failed');
+        const contentType = response.headers.get("content-type");
+        let data;
+        
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() || 'Unknown error' };
         }
 
-        // Clear local storage
-        //localStorage.removeItem('authToken');
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP Error: ${response.status}`);
+        }
+
+        // Clear storage
         sessionStorage.removeItem('authToken');
-        //localStorage.removeItem('user');
         sessionStorage.removeItem('user');
 
         return data;
@@ -84,10 +103,17 @@ export async function validateToken(token) {
             }
         });
 
-        const data = await response.json();
+        const contentType = response.headers.get("content-type");
+        let data;
+        
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() || 'Unknown error' };
+        }
 
         if (!response.ok) {
-            throw new Error(data.message || 'Token validation failed');
+            throw new Error(data.message || `HTTP Error: ${response.status}`);
         }
 
         return data;
@@ -107,10 +133,17 @@ export async function changePassword(userId, currentPassword, newPassword) {
             body: JSON.stringify({ userId, currentPassword, newPassword })
         });
 
-        const data = await response.json();
+        const contentType = response.headers.get("content-type");
+        let data;
+        
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() || 'Unknown error' };
+        }
 
         if (!response.ok) {
-            throw new Error(data.message || 'Password change failed');
+            throw new Error(data.message || `HTTP Error: ${response.status}`);
         }
 
         return data;
@@ -129,10 +162,17 @@ export async function getUsers() {
             }
         });
 
-        const data = await response.json();
+        const contentType = response.headers.get("content-type");
+        let data;
+        
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() || 'Unknown error' };
+        }
 
         if (!response.ok) {
-            throw new Error(data.message || 'Failed to fetch users');
+            throw new Error(data.message || `HTTP Error: ${response.status}`);
         }
 
         return data;
@@ -151,15 +191,112 @@ export async function deactivateUser(userId) {
             }
         });
 
-        const data = await response.json();
+        const contentType = response.headers.get("content-type");
+        let data;
+        
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() || 'Unknown error' };
+        }
 
         if (!response.ok) {
-            throw new Error(data.message || 'Failed to deactivate user');
+            throw new Error(data.message || `HTTP Error: ${response.status}`);
         }
 
         return data;
     } catch (error) {
         console.error('Deactivate user error:', error);
+        throw error;
+    }
+}
+
+export async function createUser(userData) {
+    try {
+        const response = await fetch(API_BASE_URL + "/CreateUser", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(userData)
+        });
+
+        const contentType = response.headers.get("content-type");
+        let data;
+        
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() || 'Unknown error' };
+        }
+
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP Error: ${response.status}`);
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Create user error:', error);
+        throw error;
+    }
+}
+
+export async function updateUser(userId, userData) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/UpdateUser/UpdateUser/${userId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(userData)
+        });
+
+        const contentType = response.headers.get("content-type");
+        let data;
+        
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() || 'Unknown error' };
+        }
+
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP Error: ${response.status}`);
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Update user error:', error);
+        throw error;
+    }
+}
+
+export async function changeUserPassword(userId, currentPassword, newPassword) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/ChangeUserPassword/ChangeUserPassword/${userId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+
+        const contentType = response.headers.get("content-type");
+        let data;
+        
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() || 'Unknown error' };
+        }
+
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP Error: ${response.status}`);
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Change user password error:', error);
         throw error;
     }
 }

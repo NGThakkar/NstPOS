@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Search, Calendar, Eye, Receipt, Download, Filter, X } from 'lucide-react';
 import { getTransactionDetails } from '../utils/storage';
 import * as XLSX from 'xlsx';
@@ -29,23 +29,23 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
         const transDate = transaction.transactionDate || transaction.timestamp;
         const cashier = transaction.cashier || transaction.cashierName || '';
         const customerName = transaction.customerName || transaction.customer || 'Walk-in Customer';
-        
+
         // Search filter (transaction ID or cashier)
         const matchesSearch = transId.includes(searchTerm) ||
             cashier.toLowerCase().includes(searchTerm.toLowerCase());
-        
+
         // From Date filter
         const matchesFromDate = !fromDate ||
             new Date(transDate) >= new Date(fromDate);
-        
+
         // To Date filter
         const matchesToDate = !toDate ||
             new Date(transDate) <= new Date(new Date(toDate).getTime() + 24 * 60 * 60 * 1000); // Include entire day
-        
+
         // Customer filter
         const matchesCustomer = !selectedCustomer ||
             customerName === selectedCustomer;
-        
+
         return matchesSearch && matchesFromDate && matchesToDate && matchesCustomer;
     }).sort((a, b) => {
         const dateA = new Date(a.transactionDate || a.timestamp);
@@ -94,22 +94,21 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
 
             // Prepare data for Excel
             const excelData = filteredTransactions.map(transaction => {
-                const transId = transaction.transactionId || transaction.id || 'N/A';
                 const transCode = transaction.transactionCode || (transaction.id && transaction.id.slice(-8)) || 'Unknown';
                 const transDate = transaction.transactionDate || transaction.timestamp;
                 const itemCount = transaction.itemCount || (transaction.items ? transaction.items.length : 0);
                 const paymentMethod = transaction.paymentMethod || 'Unknown';
                 const totalAmount = transaction.totalAmount || transaction.total || 0;
                 const customerName = transaction.customerName || transaction.customer || 'Walk-in Customer';
-                
+
                 // Try multiple fields for cashier name
                 let cashier = transaction.cashier || transaction.cashierName || transaction.user?.fullName || 'Unknown';
-                
+
                 // If cashier is a notes field from localStorage, extract it
                 if (cashier && cashier.toLowerCase().startsWith('cashier:')) {
                     cashier = cashier.replace(/^cashier:\s*/i, '').trim();
                 }
-                
+
                 const taxAmount = transaction.taxAmount || transaction.tax || 0;
                 const discountAmount = transaction.discountAmount || transaction.discount || 0;
 
@@ -360,10 +359,10 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                                 const paymentMethod = transaction.paymentMethod || 'Unknown';
                                 const totalAmount = transaction.totalAmount || transaction.total || 0;
                                 const customerName = transaction.customerName || transaction.customer || 'Walk-in Customer';
-                                
+
                                 // Try multiple fields for cashier name
                                 let cashier = transaction.cashier || transaction.cashierName || transaction.user?.fullName || 'Unknown';
-                                
+
                                 // If cashier is a notes field from localStorage, extract it
                                 if (cashier && cashier.toLowerCase().startsWith('cashier:')) {
                                     cashier = cashier.replace(/^cashier:\s*/i, '').trim();

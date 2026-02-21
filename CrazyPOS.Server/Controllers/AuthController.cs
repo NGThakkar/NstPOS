@@ -288,18 +288,32 @@ namespace CrazyPOS.Server.Controllers
             {
                 using (var dbContext = _dbFactory.CreateDbContext())
                 {
-                    var users = dbContext.Users
-                        .Select(u => new UserDto
-                        {
-                            UserId = u.UserId,
-                            Username = u.Username,
-                            Email = u.Email,
-                            FullName = u.FullName,
-                            Role = u.Role,
-                            IsActive = u.IsActive,
-                            LastLogin = u.LastLogin ?? DateTime.MinValue
-                        })
-                        .ToList();
+                    // Get all users with safe datetime handling
+                    var users = new List<UserDto>();
+                    
+                    try
+                    {
+                        users = dbContext.Users
+                            .AsEnumerable()  // Bring data to memory first to avoid SQL datetime issues
+                            .Select(u => new UserDto
+                            {
+                                UserId = u.UserId,
+                                Username = u.Username,
+                                Email = u.Email,
+                                FullName = u.FullName,
+                                Role = u.Role,
+                                IsActive = u.IsActive,
+                                LastLogin = u.LastLogin.HasValue && u.LastLogin.Value > DateTime.MinValue 
+                                    ? u.LastLogin.Value 
+                                    : DateTime.MinValue
+                            })
+                            .ToList();
+                    }
+                    catch (Exception ex)
+                    {
+                        // If there's a datetime issue, try to get users without LastLogin
+                        return BadRequest(new { success = false, message = $"Error retrieving users: {ex.Message}. There may be invalid datetime values in the database." });
+                    }
 
                     return Ok(users);
                 }
@@ -351,6 +365,173 @@ namespace CrazyPOS.Server.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { success = false, message = $"Error deactivating user: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        [ActionName("CreateUser")]
+        public IActionResult CreateUser([FromBody] RegisterUserDto createRequest)
+        {
+            if (string.IsNullOrWhiteSpace(createRequest.Username) || 
+                string.IsNullOrWhiteSpace(createRequest.Password) ||
+                string.IsNullOrWhiteSpace(createRequest.Email))
+            {
+                return BadRequest(new { success = false, message = "Username, email, and password are required" });
+            }
+
+            try
+            {
+                using (var dbContext = _dbFactory.CreateDbContext())
+                {
+                    // Check if user already exists
+                    if (dbContext.Users.Any(u => u.Username == createRequest.Username))
+                    {
+                        return BadRequest(new { success = false, message = "Username already exists" });
+                    }
+
+                    if (dbContext.Users.Any(u => u.Email == createRequest.Email))
+                    {
+                        return BadRequest(new { success = false, message = "Email already exists" });
+                    }
+
+                    var user = new User
+                    {
+                        Username = createRequest.Username,
+                        Email = createRequest.Email,
+                        FullName = createRequest.FullName,
+                        PasswordHash = HashPassword(createRequest.Password),
+                        Role = createRequest.Role ?? "Cashier",
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    dbContext.Users.Add(user);
+                    dbContext.SaveChanges();
+
+                    return Ok(new 
+                    { 
+                        success = true, 
+                        message = "User created successfully", 
+                        userId = user.UserId,
+                        user = new UserDto
+                        {
+                            UserId = user.UserId,
+                            Username = user.Username,
+                            Email = user.Email,
+                            FullName = user.FullName,
+                            Role = user.Role,
+                            IsActive = user.IsActive,
+                            LastLogin = user.LastLogin ?? DateTime.MinValue
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = $"User creation failed: {ex.Message}" });
+            }
+        }
+
+        [HttpPut("UpdateUser/{userId}")]
+        public IActionResult UpdateUser(long userId, [FromBody] UpdateUserDto updateRequest)
+        {
+            if (userId <= 0)
+            {
+                return BadRequest(new { success = false, message = "Invalid user ID" });
+            }
+
+            if (string.IsNullOrWhiteSpace(updateRequest.FullName) || 
+                string.IsNullOrWhiteSpace(updateRequest.Email))
+            {
+                return BadRequest(new { success = false, message = "Full name and email are required" });
+            }
+
+            try
+            {
+                using (var dbContext = _dbFactory.CreateDbContext())
+                {
+                    var user = dbContext.Users.Find(userId);
+                    if (user == null)
+                    {
+                        return NotFound(new { success = false, message = "User not found" });
+                    }
+
+                    // Check if new email already exists (for different user)
+                    if (updateRequest.Email != user.Email && 
+                        dbContext.Users.Any(u => u.Email == updateRequest.Email))
+                    {
+                        return BadRequest(new { success = false, message = "Email already exists" });
+                    }
+
+                    user.FullName = updateRequest.FullName;
+                    user.Email = updateRequest.Email;
+                    user.LastUpdated = DateTime.UtcNow;
+
+                    dbContext.SaveChanges();
+
+                    return Ok(new 
+                    { 
+                        success = true, 
+                        message = "User updated successfully",
+                        user = new UserDto
+                        {
+                            UserId = user.UserId,
+                            Username = user.Username,
+                            Email = user.Email,
+                            FullName = user.FullName,
+                            Role = user.Role,
+                            IsActive = user.IsActive,
+                            LastLogin = user.LastLogin ?? DateTime.MinValue
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = $"User update failed: {ex.Message}" });
+            }
+        }
+
+        [HttpPost("ChangeUserPassword/{userId}")]
+        public IActionResult ChangeUserPassword(long userId, [FromBody] ChangeUserPasswordDto changePasswordRequest)
+        {
+            if (userId <= 0)
+            {
+                return BadRequest(new { success = false, message = "Invalid user ID" });
+            }
+
+            if (string.IsNullOrWhiteSpace(changePasswordRequest.CurrentPassword) ||
+                string.IsNullOrWhiteSpace(changePasswordRequest.NewPassword))
+            {
+                return BadRequest(new { success = false, message = "Current password and new password are required" });
+            }
+
+            try
+            {
+                using (var dbContext = _dbFactory.CreateDbContext())
+                {
+                    var user = dbContext.Users.Find(userId);
+                    if (user == null)
+                    {
+                        return NotFound(new { success = false, message = "User not found" });
+                    }
+
+                    // Verify current password
+                    if (!VerifyPassword(changePasswordRequest.CurrentPassword, user.PasswordHash))
+                    {
+                        return Unauthorized(new { success = false, message = "Current password is incorrect" });
+                    }
+
+                    user.PasswordHash = HashPassword(changePasswordRequest.NewPassword);
+                    user.LastUpdated = DateTime.UtcNow;
+                    dbContext.SaveChanges();
+
+                    return Ok(new { success = true, message = "Password changed successfully" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = $"Change password failed: {ex.Message}" });
             }
         }
 

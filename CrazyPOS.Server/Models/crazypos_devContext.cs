@@ -45,6 +45,14 @@ public partial class crazypos_devContext : DbContext
 
     public virtual DbSet<Receipt> Receipts { get; set; }
 
+    public virtual DbSet<Role> Roles { get; set; }
+
+    public virtual DbSet<Permission> Permissions { get; set; }
+
+    public virtual DbSet<RolePermission> RolePermissions { get; set; }
+
+    public virtual DbSet<AuditLog> AuditLogs { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -592,6 +600,129 @@ public partial class crazypos_devContext : DbContext
                 .WithMany()
                 .HasForeignKey(d => d.TransactionId)
                 .HasConstraintName("FK_receipts_sales_transactions");
+        });
+
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.ToTable("Roles");
+
+            entity.HasKey(e => e.RoleId).HasName("PK_roles");
+
+            entity.Property(e => e.RoleId).HasColumnName("RoleId");
+            entity.Property(e => e.RoleName)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("RoleName");
+            entity.Property(e => e.Description).HasColumnName("Description");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("IsActive");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime2")
+                .HasColumnName("CreatedAt");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime2")
+                .HasColumnName("UpdatedAt");
+        });
+
+        modelBuilder.Entity<Permission>(entity =>
+        {
+            entity.ToTable("Permissions");
+
+            entity.HasKey(e => e.PermissionId).HasName("PK_permissions");
+
+            entity.Property(e => e.PermissionId).HasColumnName("PermissionId");
+            entity.Property(e => e.PermissionCode)
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnName("PermissionCode");
+            entity.Property(e => e.PermissionName)
+                .IsRequired()
+                .HasMaxLength(150)
+                .HasColumnName("PermissionName");
+            entity.Property(e => e.Description).HasColumnName("Description");
+            entity.Property(e => e.Module)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("Module");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("IsActive");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime2")
+                .HasColumnName("CreatedAt");
+        });
+
+        modelBuilder.Entity<RolePermission>(entity =>
+        {
+            entity.ToTable("RolePermissions");
+
+            entity.HasKey(e => e.RolePermissionId).HasName("PK_role_permissions");
+
+            entity.HasIndex(e => e.RoleId, "IX_role_permissions_role_id");
+            entity.HasIndex(e => e.PermissionId, "IX_role_permissions_permission_id");
+
+            entity.Property(e => e.RolePermissionId).HasColumnName("RolePermissionId");
+            entity.Property(e => e.RoleId).HasColumnName("RoleId");
+            entity.Property(e => e.PermissionId).HasColumnName("PermissionId");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime2")
+                .HasColumnName("CreatedAt");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.RolePermissions)
+                .HasForeignKey(d => d.RoleId)
+                .HasConstraintName("FK_RolePermissions_Roles");
+
+            entity.HasOne(d => d.Permission).WithMany(p => p.RolePermissions)
+                .HasForeignKey(d => d.PermissionId)
+                .HasConstraintName("FK_RolePermissions_Permissions");
+        });
+
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.ToTable("AuditLogs");
+
+            entity.HasKey(e => e.AuditLogId).HasName("PK_audit_logs");
+
+            entity.HasIndex(e => e.UserId, "IX_audit_logs_user_id");
+            entity.HasIndex(e => e.CreatedAt, "IX_audit_logs_created_at");
+
+            entity.Property(e => e.AuditLogId).HasColumnName("AuditLogId");
+            entity.Property(e => e.UserId).HasColumnName("UserId");
+            entity.Property(e => e.Action)
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnName("Action");
+            entity.Property(e => e.Module)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("Module");
+            entity.Property(e => e.EntityType)
+                .HasMaxLength(100)
+                .HasColumnName("EntityType");
+            entity.Property(e => e.EntityId).HasColumnName("EntityId");
+            entity.Property(e => e.OldValue).HasColumnName("OldValue");
+            entity.Property(e => e.NewValue).HasColumnName("NewValue");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasColumnName("Status");
+            entity.Property(e => e.IPAddress)
+                .HasMaxLength(45)
+                .HasColumnName("IPAddress");
+            entity.Property(e => e.UserAgent)
+                .HasMaxLength(500)
+                .HasColumnName("UserAgent");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnType("datetime2")
+                .HasColumnName("CreatedAt");
+
+            entity.HasOne(d => d.User).WithMany()
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_AuditLogs_Users");
         });
 
         OnModelCreatingPartial(modelBuilder);

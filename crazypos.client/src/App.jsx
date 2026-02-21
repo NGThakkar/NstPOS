@@ -21,6 +21,7 @@ import { Inventory } from './components/Inventory';
 import { CustomerManagement } from './components/CustomerManagement';
 import { Login } from './components/Login';
 import { Sales } from './components/Sales';
+import { UserManagement } from './components/UserManagement';
 import { sampleProducts } from './data/products';
 import { loadTransactionsFromDatabase, saveTransaction, loadProducts, loadCategories } from './utils/storage';
 import { getStoredToken, getStoredUser, logoutUser } from './utils/auth';
@@ -213,13 +214,39 @@ function App() {
             ]
         },
         { id: 'sales', name: 'Sales', icon: ShoppingCart },
-        //{ id: 'pos', name: 'Point of Sale (Legacy)', icon: ShoppingCart },
         { id: 'inventory', name: 'Inventory', icon: Package },
         { id: 'customers', name: 'Customers', icon: Users },
+        { id: 'users', name: 'Users', icon: Users },
         { id: 'transactions', name: 'Transactions', icon: History },
         { id: 'settings', name: 'Settings', icon: Settings }
     ];
 
+    // Filter navigation based on user role
+    const getFilteredNavigation = () => {
+        const userRole = currentUser?.role || 'Cashier';
+        
+        // Define which menu items are available for each role
+        const rolePermissions = {
+            'Admin': ['dashboard', 'product', 'sales', 'inventory', 'customers', 'users', 'transactions', 'settings'],
+            'Manager': ['dashboard', 'product', 'sales', 'inventory', 'customers', 'transactions'],
+            'Cashier': ['dashboard', 'sales', 'customers', 'transactions']
+        };
+
+        const allowedItems = rolePermissions[userRole] || rolePermissions['Cashier'];
+
+        return navigation.filter(item => {
+            if (item.submenu) {
+                // Filter submenu items - only show product submenu for managers/admins
+                if (item.id === 'product') {
+                    return userRole !== 'Cashier' && allowedItems.includes(item.id);
+                }
+                return allowedItems.includes(item.id);
+            }
+            return allowedItems.includes(item.id);
+        });
+    };
+
+    const filteredNavigation = getFilteredNavigation();
 
     const renderContent = () => {
         switch (activeTab) {
@@ -229,7 +256,7 @@ function App() {
                         <Spinner />
                     </div>
                 </>
-                ) : (<Dashboard transactions={transactions} setActiveTab={setActiveTab} setTransactionFilters={setTransactionFilters} />)}</>);
+                ) : (<Dashboard transactions={transactions} setActiveTab={setActiveTab} setTransactionFilters={setTransactionFilters} currentUser={currentUser} />)}</>);
             case 'sales':
                 return (
                     <>
@@ -289,6 +316,17 @@ function App() {
                         </div>
                     ) : (
                         <CustomerManagement />
+                    )}
+                </>
+                );
+            case 'users':
+                return (<>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-full">
+                            <Spinner />
+                        </div>
+                    ) : (
+                        <UserManagement currentUser={currentUser} />
                     )}
                 </>
                 );
@@ -356,7 +394,7 @@ function App() {
                 <nav className="w-64 bg-white shadow-sm border-r border-gray-200 min-h-[calc(100vh-80px)]">
                     <div className="p-4">
                         <ul className="space-y-2">
-                            {navigation.map((item) => (
+                            {filteredNavigation.map((item) => (
                                 <li key={item.id}>
                                     {
                                         item.submenu ? (

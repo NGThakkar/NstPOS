@@ -45,4 +45,16 @@ namespace CrazyPOS.Server.Dto
         public string CurrentPassword { get; set; }
         public string NewPassword { get; set; }
     }
+
+    public class UpdateUserDto
+    {
+        public string FullName { get; set; }
+        public string Email { get; set; }
+    }
+
+    public class ChangeUserPasswordDto
+    {
+        public string CurrentPassword { get; set; }
+        public string NewPassword { get; set; }
+    }
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { DollarSign, ShoppingCart, Users, TrendingUp, Dot } from 'lucide-react';
 
-export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters }) => {
+export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters, currentUser }) => {
     const today = new Date().toDateString();
     const todayTransactions = transactions.filter(t => {
         // Handle both database and localStorage transaction formats
@@ -86,6 +86,8 @@ export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters })
         }
     ];
 
+    const userRole = currentUser?.role || 'Cashier';
+
     return (
         <div className="space-y-6">
             <div>
@@ -163,15 +165,18 @@ export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters })
                         <button onClick={() => { setActiveTab('sales') }} className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                             New Sale
                         </button>
-                        <button onClick={() => { setActiveTab('addproduct')} } className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium">
+                        {userRole != 'Cashier' && (<>
+                            <button onClick={() => { setActiveTab('addproduct')} } className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium">
                             Add Product
-                        </button>
-                        <button onClick={() => { setActiveTab('inventory') }} className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg hover:bg-orange-700 transition-colors font-medium">
-                            View Inventory
-                        </button>
-                        <button className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium">
-                            Generate Report
-                        </button>
+                            </button>
+                            <button onClick={() => { setActiveTab('inventory') }} className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg hover:bg-orange-700 transition-colors font-medium">
+                                View Inventory
+                            </button>
+                            <button className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                                Generate Report
+                            </button>
+                        </>
+                        )}                        
                     </div>
                 </div>
             </div>
