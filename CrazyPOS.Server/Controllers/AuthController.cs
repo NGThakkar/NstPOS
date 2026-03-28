@@ -1,7 +1,10 @@
+using CrazyPOS.Server.Auth;
 using CrazyPOS.Server.Dto;
 using CrazyPOS.Server.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -12,12 +15,12 @@ namespace CrazyPOS.Server.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IDbContextFactory<crazypos_devContext> _dbFactory;
-        private readonly IConfiguration _configuration;
+        private readonly SecuritySettings _security;
 
-        public AuthController(IDbContextFactory<crazypos_devContext> dbFactory, IConfiguration configuration)
+        public AuthController(IDbContextFactory<crazypos_devContext> dbFactory, IOptions<SecuritySettings> securitySettings)
         {
             _dbFactory = dbFactory;
-            _configuration = configuration;
+            _security = securitySettings.Value;
         }
 
         [HttpPost]
@@ -70,19 +73,22 @@ namespace CrazyPOS.Server.Controllers
                     // Generate token
                     string token = GenerateToken();
 
+                    var loginTime = DateTime.UtcNow;
+                    var expiresAt = loginTime.AddHours(_security.TokenExpiryHours);
+
                     // Create user session
                     var userSession = new UserSession
                     {
                         UserId = user.UserId,
                         Token = token,
-                        LoginTime = DateTime.UtcNow,
+                        LoginTime = loginTime,
                         IsActive = true,
                         IPAddress = GetClientIpAddress(),
                         UserAgent = Request.Headers["User-Agent"].ToString()
                     };
 
                     dbContext.UserSessions.Add(userSession);
-                    user.LastLogin = DateTime.UtcNow;
+                    user.LastLogin = loginTime;
                     dbContext.SaveChanges();
 
                     return Ok(new LoginResponseDto
@@ -90,6 +96,7 @@ namespace CrazyPOS.Server.Controllers
                         Success = true,
                         Message = "Login successful",
                         Token = token,
+                        ExpiresAt = expiresAt,
                         User = new UserDto
                         {
                             UserId = user.UserId,
@@ -195,6 +202,7 @@ namespace CrazyPOS.Server.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost]
         [ActionName("ChangePassword")]
         public IActionResult ChangePassword([FromBody] ChangePasswordDto changePasswordRequest)
@@ -251,16 +259,26 @@ namespace CrazyPOS.Server.Controllers
                     var session = dbContext.UserSessions
                         .Include(s => s.User)
                         .FirstOrDefault(s => s.Token == token && s.IsActive);
-                    
+
                     if (session == null)
                     {
                         return Unauthorized(new { valid = false, message = "Invalid or expired token" });
                     }
 
-                    return Ok(new 
-                    { 
-                        valid = true, 
+                    var expiresAt = session.LoginTime.AddHours(_security.TokenExpiryHours);
+                    if (DateTime.UtcNow > expiresAt)
+                    {
+                        session.IsActive = false;
+                        session.LogoutTime = DateTime.UtcNow;
+                        dbContext.SaveChanges();
+                        return Unauthorized(new { valid = false, message = "Session has expired" });
+                    }
+
+                    return Ok(new
+                    {
+                        valid = true,
                         message = "Token is valid",
+                        expiresAt,
                         user = new UserDto
                         {
                             UserId = session.User.UserId,
@@ -280,6 +298,7 @@ namespace CrazyPOS.Server.Controllers
             }
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet]
         [ActionName("GetUsers")]
         public IActionResult GetUsers()
@@ -324,6 +343,7 @@ namespace CrazyPOS.Server.Controllers
             }
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         [ActionName("DeactivateUser")]
         public IActionResult DeactivateUser(long userId)
@@ -368,6 +388,7 @@ namespace CrazyPOS.Server.Controllers
             }
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         [ActionName("ReactivateUser")]
         public IActionResult ReactivateUser(long userId)
@@ -400,6 +421,7 @@ namespace CrazyPOS.Server.Controllers
             }
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         [ActionName("CreateUser")]
         public IActionResult CreateUser([FromBody] RegisterUserDto createRequest)
@@ -464,6 +486,7 @@ namespace CrazyPOS.Server.Controllers
             }
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpPut("UpdateUser/{userId}")]
         public IActionResult UpdateUser(long userId, [FromBody] UpdateUserDto updateRequest)
         {
@@ -524,6 +547,7 @@ namespace CrazyPOS.Server.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost("ChangeUserPassword/{userId}")]
         public IActionResult ChangeUserPassword(long userId, [FromBody] ChangeUserPasswordDto changePasswordRequest)
         {

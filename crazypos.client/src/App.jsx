@@ -24,7 +24,7 @@ import { Sales } from './components/Sales';
 import { UserManagement } from './components/UserManagement';
 import { sampleProducts } from './data/products';
 import { loadTransactionsFromDatabase, saveTransaction, loadProducts, loadCategories } from './utils/storage';
-import { getStoredToken, getStoredUser, logoutUser } from './utils/auth';
+import { getStoredToken, getStoredUser, logoutUser, validateToken } from './utils/auth';
 
 function App() {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -41,14 +41,57 @@ function App() {
     const [transactionFilters, setTransactionFilters] = useState(null);
 
     useEffect(() => {
-        // Check if user is already logged in
-        const token = getStoredToken();
-        const user = getStoredUser();
-        if (token && user) {
-            setIsAuthenticated(true);
-            setCurrentUser(user);
-            setAuthToken(token);
+        async function bootstrapAuth() {
+            const token = getStoredToken();
+            const user = getStoredUser();
+            const expiresAt = sessionStorage.getItem('authExpiresAt');
+
+            if (!token || !user) return;
+
+            if (expiresAt && Date.now() >= new Date(expiresAt).getTime()) {
+                sessionStorage.removeItem('authToken');
+                sessionStorage.removeItem('authExpiresAt');
+                sessionStorage.removeItem('user');
+                return;
+            }
+
+            try {
+                const validated = await validateToken(token);
+                if (validated?.valid) {
+                    setIsAuthenticated(true);
+                    setCurrentUser(validated.user ?? user);
+                    setAuthToken(token);
+                    if (validated.expiresAt) {
+                        sessionStorage.setItem('authExpiresAt', validated.expiresAt);
+                    }
+                } else {
+                    sessionStorage.removeItem('authToken');
+                    sessionStorage.removeItem('authExpiresAt');
+                    sessionStorage.removeItem('user');
+                }
+            } catch {
+                sessionStorage.removeItem('authToken');
+                sessionStorage.removeItem('authExpiresAt');
+                sessionStorage.removeItem('user');
+            }
         }
+
+        bootstrapAuth();
+    }, []);
+
+    useEffect(() => {
+        const handleSessionExpired = () => {
+            setIsAuthenticated(false);
+            setCurrentUser(null);
+            setAuthToken(null);
+            setActiveTab('dashboard');
+            sessionStorage.removeItem('authToken');
+            sessionStorage.removeItem('authExpiresAt');
+            sessionStorage.removeItem('user');
+        };
+
+        window.addEventListener('session:expired', handleSessionExpired);
+        return () => window.removeEventListener('session:expired', handleSessionExpired);
     }, []);
 
     // Load data on mount
@@ -177,6 +220,9 @@ function App() {
         setIsAuthenticated(true);
         setCurrentUser(user);
         setAuthToken(token);
+        if (user) {
+            sessionStorage.setItem('user', JSON.stringify(user));
+        }
     };
 
     const handleLogout = async () => {

@@ -1,206 +1,49 @@
-const API_BASE_URL = "http://localhost:5053/api/Role";
+import { apiFetch } from './apiClient';
 
-/**
- * Get all roles with their permissions
- */
 export async function getRoles() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/GetRoles`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to fetch roles');
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Get roles error:', error);
-        throw error;
-    }
+    return apiFetch('/api/Role/GetRoles');
 }
 
-/**
- * Get specific role
- */
 export async function getRole(roleId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/GetRole?roleId=${roleId}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to fetch role');
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Get role error:', error);
-        throw error;
-    }
+    return apiFetch(`/api/Role/GetRole?roleId=${roleId}`);
 }
 
-/**
- * Get all permissions
- */
 export async function getPermissions() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/GetPermissions`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to fetch permissions');
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Get permissions error:', error);
-        throw error;
-    }
+    return apiFetch('/api/Role/GetPermissions');
 }
 
-/**
- * Get user with role and permissions
- */
 export async function getUserWithRole(userId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/GetUserWithRole?userId=${userId}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to fetch user');
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Get user with role error:', error);
-        throw error;
-    }
+    return apiFetch(`/api/Role/GetUserWithRole?userId=${userId}`);
 }
 
-/**
- * Check if user has specific permission
- */
 export async function hasPermission(userId, permissionCode) {
     try {
-        const response = await fetch(`${API_BASE_URL}/HasPermission?userId=${userId}&permissionCode=${permissionCode}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to check permission');
-        }
-
-        return data.hasPermission;
-    } catch (error) {
-        console.error('Check permission error:', error);
+        const data = await apiFetch(`/api/Role/HasPermission?userId=${userId}&permissionCode=${encodeURIComponent(permissionCode)}`);
+        return data.hasPermission ?? false;
+    } catch {
         return false;
     }
 }
 
-/**
- * Update user role (Admin only)
- */
 export async function updateUserRole(userId, newRole) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/UpdateUserRole`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                userId,
-                role: newRole
-            })
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to update user role');
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Update user role error:', error);
-        throw error;
-    }
+    return apiFetch('/api/Role/UpdateUserRole', {
+        method: 'POST',
+        body: JSON.stringify({ userId, role: newRole }),
+    });
 }
 
-/**
- * Get audit logs
- */
 export async function getAuditLogs(pageNumber = 1, pageSize = 50) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/GetAuditLogs?pageNumber=${pageNumber}&pageSize=${pageSize}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to fetch audit logs');
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Get audit logs error:', error);
-        throw error;
-    }
+    return apiFetch(`/api/Role/GetAuditLogs?pageNumber=${pageNumber}&pageSize=${pageSize}`);
 }
 
-/**
- * Log user action
- */
 export async function logAction(userId, action, module, entityType, entityId, status = 'Success') {
     try {
-        const response = await fetch(`${API_BASE_URL}/LogAction`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                userId,
-                action,
-                module,
-                entityType,
-                entityId,
-                status
-            })
+        return await apiFetch('/api/Role/LogAction', {
+            method: 'POST',
+            body: JSON.stringify({ userId, action, module, entityType, entityId, status }),
         });
-
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to log action');
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Log action error:', error);
-        // Don't throw - audit logging shouldn't block operations
+    } catch {
+        // Audit logging must not block business operations
         return { success: false };
     }
 }

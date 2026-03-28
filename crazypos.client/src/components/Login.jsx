@@ -36,6 +36,9 @@ export const Login = ({ onLoginSuccess }) => {
             if (response.success) {
                 setMessage({ type: 'success', text: 'Login successful!' });
                 sessionStorage.setItem('authToken', response.token);
+                if (response.expiresAt) {
+                    sessionStorage.setItem('authExpiresAt', response.expiresAt);
+                }
                 //localStorage.setItem('authToken', response.token);
                 sessionStorage.setItem('user', JSON.stringify(response.user));
                 //localStorage.setItem('user', JSON.stringify(response.user));

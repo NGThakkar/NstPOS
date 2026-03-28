@@ -1,347 +1,100 @@
-const API_BASE_URL = "http://localhost:5053/api/Auth";
+import { apiFetch, apiUrl } from './apiClient';
 
+// Login does not require an auth token — use raw fetch so it works before any session exists.
 export async function loginUser(username, password) {
-    try {
-        const response = await fetch(API_BASE_URL + "/Login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ username, password })
-        });
-
-        const contentType = response.headers.get("content-type");
-        let data;
-        
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() || 'Unknown error' };
-        }
-        
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP Error: ${response.status}`);
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Login error:', error);
-        throw error;
-    }
+    const response = await fetch(apiUrl('/api/Auth/Login'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+    });
+    const contentType = response.headers.get('content-type');
+    const data = contentType?.includes('application/json')
+        ? await response.json()
+        : { message: await response.text() };
+    if (!response.ok) throw new Error(data.message ?? `HTTP Error: ${response.status}`);
+    return data;
 }
 
 export async function registerUser(userData) {
-    try {
-        const response = await fetch(API_BASE_URL + "/Register", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(userData)
-        });
-
-        const contentType = response.headers.get("content-type");
-        let data;
-        
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() || 'Unknown error' };
-        }
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP Error: ${response.status}`);
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Registration error:', error);
-        throw error;
-    }
+    return apiFetch('/api/Auth/Register', {
+        method: 'POST',
+        body: JSON.stringify(userData),
+    });
 }
 
 export async function logoutUser(token) {
-    try {
-        const response = await fetch(API_BASE_URL + "/Logout", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ token })
-        });
-
-        const contentType = response.headers.get("content-type");
-        let data;
-        
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() || 'Unknown error' };
-        }
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP Error: ${response.status}`);
-        }
-
-        // Clear storage
-        sessionStorage.removeItem('authToken');
-        sessionStorage.removeItem('user');
-
-        return data;
-    } catch (error) {
-        console.error('Logout error:', error);
-        throw error;
-    }
+    const data = await apiFetch('/api/Auth/Logout', {
+        method: 'POST',
+        body: JSON.stringify({ token }),
+    });
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('authExpiresAt');
+    sessionStorage.removeItem('user');
+    return data;
 }
 
+// ValidateToken is intentionally unauthenticated (used to verify stored token on startup).
 export async function validateToken(token) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/ValidateToken?token=${token}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
-        const contentType = response.headers.get("content-type");
-        let data;
-        
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() || 'Unknown error' };
-        }
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP Error: ${response.status}`);
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Token validation error:', error);
-        throw error;
-    }
+    const response = await fetch(apiUrl(`/api/Auth/ValidateToken?token=${encodeURIComponent(token)}`), {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    const data = response.headers.get('content-type')?.includes('application/json')
+        ? await response.json()
+        : { message: await response.text() };
+    if (!response.ok) throw new Error(data.message ?? `HTTP Error: ${response.status}`);
+    return data;
 }
 
 export async function changePassword(userId, currentPassword, newPassword) {
-    try {
-        const response = await fetch(API_BASE_URL + "/ChangePassword", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ userId, currentPassword, newPassword })
-        });
-
-        const contentType = response.headers.get("content-type");
-        let data;
-        
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() || 'Unknown error' };
-        }
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP Error: ${response.status}`);
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Password change error:', error);
-        throw error;
-    }
+    return apiFetch('/api/Auth/ChangePassword', {
+        method: 'POST',
+        body: JSON.stringify({ userId, currentPassword, newPassword }),
+    });
 }
 
 export async function getUsers() {
-    try {
-        const response = await fetch(API_BASE_URL + "/GetUsers", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
-        const contentType = response.headers.get("content-type");
-        let data;
-        
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() || 'Unknown error' };
-        }
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP Error: ${response.status}`);
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Get users error:', error);
-        throw error;
-    }
+    return apiFetch('/api/Auth/GetUsers');
 }
 
 export async function deactivateUser(userId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/DeactivateUser?userId=${userId}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
-        const contentType = response.headers.get("content-type");
-        let data;
-        
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() || 'Unknown error' };
-        }
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP Error: ${response.status}`);
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Deactivate user error:', error);
-        throw error;
-    }
+    return apiFetch(`/api/Auth/DeactivateUser?userId=${userId}`, { method: 'POST' });
 }
 
 export async function reactivateUser(userId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/ReactivateUser?userId=${userId}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
-        const contentType = response.headers.get("content-type");
-        let data;
-        
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() || 'Unknown error' };
-        }
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP Error: ${response.status}`);
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Reactivate user error:', error);
-        throw error;
-    }
+    return apiFetch(`/api/Auth/ReactivateUser?userId=${userId}`, { method: 'POST' });
 }
 
 export async function createUser(userData) {
-    try {
-        const response = await fetch(API_BASE_URL + "/CreateUser", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(userData)
-        });
-
-        const contentType = response.headers.get("content-type");
-        let data;
-        
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() || 'Unknown error' };
-        }
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP Error: ${response.status}`);
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Create user error:', error);
-        throw error;
-    }
+    return apiFetch('/api/Auth/CreateUser', {
+        method: 'POST',
+        body: JSON.stringify(userData),
+    });
 }
 
 export async function updateUser(userId, userData) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/UpdateUser/UpdateUser/${userId}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(userData)
-        });
-
-        const contentType = response.headers.get("content-type");
-        let data;
-        
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() || 'Unknown error' };
-        }
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP Error: ${response.status}`);
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Update user error:', error);
-        throw error;
-    }
+    return apiFetch(`/api/Auth/UpdateUser/UpdateUser/${userId}`, {
+        method: 'PUT',
+        body: JSON.stringify(userData),
+    });
 }
 
 export async function changeUserPassword(userId, currentPassword, newPassword) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/ChangeUserPassword/ChangeUserPassword/${userId}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ currentPassword, newPassword })
-        });
-
-        const contentType = response.headers.get("content-type");
-        let data;
-        
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = { message: await response.text() || 'Unknown error' };
-        }
-
-        if (!response.ok) {
-            throw new Error(data.message || `HTTP Error: ${response.status}`);
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Change user password error:', error);
-        throw error;
-    }
+    return apiFetch(`/api/Auth/ChangeUserPassword/ChangeUserPassword/${userId}`, {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword, newPassword }),
+    });
 }
 
 export function getStoredToken() {
-    //return localStorage.getItem('authToken');
     return sessionStorage.getItem('authToken');
 }
 
 export function getStoredUser() {
-    //const user = localStorage.getItem('user');
     const user = sessionStorage.getItem('user');
     return user ? JSON.parse(user) : null;
 }
 
 export function isUserAuthenticated() {
-    //return !!localStorage.getItem('authToken') && !!localStorage.getItem('user');
     return !!sessionStorage.getItem('authToken') && !!sessionStorage.getItem('user');
 }

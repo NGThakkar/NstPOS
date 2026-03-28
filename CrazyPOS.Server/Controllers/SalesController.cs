@@ -1,5 +1,7 @@
+using CrazyPOS.Server.Auth;
 using CrazyPOS.Server.Dto;
 using CrazyPOS.Server.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,61 +10,18 @@ using System.Threading.Tasks;
 
 namespace CrazyPOS.Server.Controllers
 {
+    [Authorize]
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class SalesController : ControllerBase
     {
         private readonly IDbContextFactory<crazypos_devContext> _dbFactory;
+        private readonly ICurrentUserService _currentUser;
 
-        public SalesController(IDbContextFactory<crazypos_devContext> dbFactory)
+        public SalesController(IDbContextFactory<crazypos_devContext> dbFactory, ICurrentUserService currentUser)
         {
             _dbFactory = dbFactory;
-        }
-
-        /// <summary>
-        /// Get authenticated user ID from token
-        /// </summary>
-        private long GetAuthenticatedUserId()
-        {
-            try
-            {
-                using (var dbContext = _dbFactory.CreateDbContext())
-                {
-                    // Extract token from Authorization header
-                    var authHeader = Request.Headers["Authorization"].ToString();
-                    var token = authHeader?.Replace("Bearer ", "").Trim();
-
-                    if (string.IsNullOrWhiteSpace(token))
-                    {
-                        // Fallback: try to get from header directly
-                        token = Request.Headers["X-Auth-Token"].ToString();
-                    }
-
-                    if (string.IsNullOrWhiteSpace(token))
-                    {
-                        // If no token provided, use default user (for backward compatibility)
-                        return 1;
-                    }
-
-                    // Get user from session using token
-                    var session = dbContext.UserSessions
-                        .Include(s => s.User)
-                        .FirstOrDefault(s => s.Token == token && s.IsActive);
-
-                    if (session?.User != null)
-                    {
-                        return session.User.UserId;
-                    }
-
-                    // If token is invalid, use default user
-                    return 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error getting authenticated user: {ex.Message}");
-                return 1; // Default to user 1 on error
-            }
+            _currentUser = currentUser;
         }
 
         /// <summary>
@@ -132,8 +91,8 @@ namespace CrazyPOS.Server.Controllers
             {
                 using (var dbContext = _dbFactory.CreateDbContext())
                 {
-                    // Get current user from authenticated token
-                    long userId = GetAuthenticatedUserId();
+                    // Get current user from auth context
+                    long userId = _currentUser.UserId;
 
                     // Create transaction
                     var transaction = new SalesTransaction
