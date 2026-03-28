@@ -369,6 +369,38 @@ namespace CrazyPOS.Server.Controllers
         }
 
         [HttpPost]
+        [ActionName("ReactivateUser")]
+        public IActionResult ReactivateUser(long userId)
+        {
+            if (userId <= 0)
+            {
+                return BadRequest(new { success = false, message = "Invalid user ID" });
+            }
+
+            try
+            {
+                using (var dbContext = _dbFactory.CreateDbContext())
+                {
+                    var user = dbContext.Users.Find(userId);
+                    if (user == null)
+                    {
+                        return NotFound(new { success = false, message = "User not found" });
+                    }
+
+                    user.IsActive = true;
+                    user.LastUpdated = DateTime.UtcNow;
+                    dbContext.SaveChanges();
+
+                    return Ok(new { success = true, message = "User reactivated successfully" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = $"Error reactivating user: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
         [ActionName("CreateUser")]
         public IActionResult CreateUser([FromBody] RegisterUserDto createRequest)
         {

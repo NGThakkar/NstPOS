@@ -417,3 +417,14 @@ FodyWeavers.xsd
 *.msm
 *.msp
 *.md
+run-both.bat
+run-client.bat
+run-server.bat
+.github/skills/html-docs-site-generator/templates/base-page.html
+.github/skills/html-docs-site-generator/templates/navigation.js
+.github/skills/html-docs-site-generator/templates/search.js
+.github/skills/html-docs-site-generator/templates/style.css
+.github/skills/skill-smith/templates/skill-frontmatter.yml
+.vscode/launch.json
+.vscode/tasks.json
+docs/copilot-changes/FEAT-001_EXECUTION_PLAN.yaml

@@ -211,6 +211,35 @@ export async function deactivateUser(userId) {
     }
 }
 
+export async function reactivateUser(userId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/ReactivateUser?userId=${userId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        const contentType = response.headers.get("content-type");
+        let data;
+        
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            data = { message: await response.text() || 'Unknown error' };
+        }
+
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP Error: ${response.status}`);
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Reactivate user error:', error);
+        throw error;
+    }
+}
+
 export async function createUser(userData) {
     try {
         const response = await fetch(API_BASE_URL + "/CreateUser", {

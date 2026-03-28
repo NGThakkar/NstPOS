@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, X, Lock, Shield } from 'lucide-react';
-import { getUsers, deactivateUser, createUser, updateUser, changeUserPassword } from '../utils/auth';
+import { getUsers, deactivateUser, reactivateUser, createUser, updateUser, changeUserPassword } from '../utils/auth';
 import { getRoles, updateUserRole } from '../utils/roles';
 
 export const UserManagement = ({ currentUser }) => {
@@ -38,6 +38,9 @@ export const UserManagement = ({ currentUser }) => {
         newPassword: '',
         confirmPassword: ''
     });
+
+    const [modalError, setModalError] = useState('');
+    const [modalSuccess, setModalSuccess] = useState('');
 
     useEffect(() => {
         loadUsers();
@@ -87,14 +90,16 @@ export const UserManagement = ({ currentUser }) => {
 
     const handleCreateUser = async (e) => {
         e.preventDefault();
+        setModalError('');
+        setModalSuccess('');
 
         if (!formData.username || !formData.email || !formData.password) {
-            setMessage({ type: 'error', text: 'Please fill in all required fields' });
+            setModalError('Please fill in all required fields');
             return;
         }
 
         if (formData.password !== formData.confirmPassword) {
-            setMessage({ type: 'error', text: 'Passwords do not match' });
+            setModalError('Passwords do not match');
             return;
         }
 
@@ -107,21 +112,24 @@ export const UserManagement = ({ currentUser }) => {
                 password: formData.password,
                 role: formData.role
             });
-            setMessage({ type: 'success', text: 'User created successfully' });
-            setShowCreateModal(false);
-            setFormData({
-                username: '',
-                email: '',
-                fullName: '',
-                password: '',
-                confirmPassword: '',
-                role: 'Cashier'
-            });
-            // Reload users after creation
-            await loadUsers();
+            setModalSuccess('User created successfully');
+            setTimeout(() => {
+                setShowCreateModal(false);
+                setFormData({
+                    username: '',
+                    email: '',
+                    fullName: '',
+                    password: '',
+                    confirmPassword: '',
+                    role: 'Cashier'
+                });
+                setModalError('');
+                setModalSuccess('');
+                loadUsers();
+            }, 1500);
         } catch (error) {
             console.error('Error creating user:', error);
-            setMessage({ type: 'error', text: error.message || 'Failed to create user' });
+            setModalError(error.message || 'Failed to create user');
         } finally {
             setIsLoading(false);
         }
@@ -129,9 +137,11 @@ export const UserManagement = ({ currentUser }) => {
 
     const handleEditUser = async (e) => {
         e.preventDefault();
+        setModalError('');
+        setModalSuccess('');
 
         if (!editFormData.fullName || !editFormData.email) {
-            setMessage({ type: 'error', text: 'Please fill in all required fields' });
+            setModalError('Please fill in all required fields');
             return;
         }
 
@@ -141,12 +151,22 @@ export const UserManagement = ({ currentUser }) => {
                 fullName: editFormData.fullName,
                 email: editFormData.email
             });
-            setMessage({ type: 'success', text: 'User updated successfully' });
-            setShowEditModal(false);
-            await loadUsers();
+            setModalSuccess('User updated successfully');
+            setTimeout(() => {
+                setShowEditModal(false);
+                setEditFormData({
+                    userId: '',
+                    fullName: '',
+                    email: '',
+                    role: 'Cashier'
+                });
+                setModalError('');
+                setModalSuccess('');
+                loadUsers();
+            }, 1500);
         } catch (error) {
             console.error('Error updating user:', error);
-            setMessage({ type: 'error', text: error.message || 'Failed to update user' });
+            setModalError(error.message || 'Failed to update user');
         } finally {
             setIsLoading(false);
         }
@@ -154,30 +174,36 @@ export const UserManagement = ({ currentUser }) => {
 
     const handleChangePassword = async (e) => {
         e.preventDefault();
+        setModalError('');
+        setModalSuccess('');
 
         if (!passwordData.currentPassword || !passwordData.newPassword) {
-            setMessage({ type: 'error', text: 'Please fill in all password fields' });
+            setModalError('Please fill in all password fields');
             return;
         }
 
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            setMessage({ type: 'error', text: 'New passwords do not match' });
+            setModalError('New passwords do not match');
             return;
         }
 
         setIsLoading(true);
         try {
             await changeUserPassword(selectedUser.userId, passwordData.currentPassword, passwordData.newPassword);
-            setMessage({ type: 'success', text: 'Password changed successfully' });
-            setShowPasswordModal(false);
-            setPasswordData({
-                currentPassword: '',
-                newPassword: '',
-                confirmPassword: ''
-            });
+            setModalSuccess('Password changed successfully');
+            setTimeout(() => {
+                setShowPasswordModal(false);
+                setPasswordData({
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: ''
+                });
+                setModalError('');
+                setModalSuccess('');
+            }, 1500);
         } catch (error) {
             console.error('Error changing password:', error);
-            setMessage({ type: 'error', text: error.message || 'Failed to change password' });
+            setModalError(error.message || 'Failed to change password');
         } finally {
             setIsLoading(false);
         }
@@ -210,6 +236,24 @@ export const UserManagement = ({ currentUser }) => {
         } catch (error) {
             console.error('Error deactivating user:', error);
             setMessage({ type: 'error', text: 'Failed to deactivate user' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleReactivateUser = async (userId) => {
+        if (!window.confirm('Are you sure you want to reactivate this user?')) {
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await reactivateUser(userId);
+            setMessage({ type: 'success', text: 'User reactivated successfully' });
+            await loadUsers();
+        } catch (error) {
+            console.error('Error reactivating user:', error);
+            setMessage({ type: 'error', text: 'Failed to reactivate user' });
         } finally {
             setIsLoading(false);
         }
@@ -430,14 +474,24 @@ export const UserManagement = ({ currentUser }) => {
                                             >
                                                 <Lock className="w-4 h-4" />
                                             </button>
-                                            <button
-                                                onClick={() => handleDeactivateUser(user.userId)}
-                                                disabled={user.userId === currentUser?.userId || !user.isActive}
-                                                className="text-red-600 hover:text-red-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                title="Deactivate user"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            {user.isActive ? (
+                                                <button
+                                                    onClick={() => handleDeactivateUser(user.userId)}
+                                                    disabled={user.userId === currentUser?.userId || !user.isActive}
+                                                    className="text-red-600 hover:text-red-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    title="Deactivate user"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleReactivateUser(user.userId)}
+                                                    className="text-green-600 hover:text-green-800 transition-colors"
+                                                    title="Reactivate user"
+                                                >
+                                                    <CheckCircle className="w-4 h-4" />
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
@@ -462,6 +516,20 @@ export const UserManagement = ({ currentUser }) => {
                         </div>
 
                         <form onSubmit={handleCreateUser} className="p-6 space-y-4">
+                            {modalError && (
+                                <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                    <p className="text-sm text-red-700">{modalError}</p>
+                                </div>
+                            )}
+                            
+                            {modalSuccess && (
+                                <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+                                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                                    <p className="text-sm text-green-700">{modalSuccess}</p>
+                                </div>
+                            )}
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                                 <input
@@ -575,6 +643,20 @@ export const UserManagement = ({ currentUser }) => {
                         </div>
 
                         <form onSubmit={handleEditUser} className="p-6 space-y-4">
+                            {modalError && (
+                                <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                    <p className="text-sm text-red-700">{modalError}</p>
+                                </div>
+                            )}
+
+                            {modalSuccess && (
+                                <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+                                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                                    <p className="text-sm text-green-700">{modalSuccess}</p>
+                                </div>
+                            )}
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                                 <input
@@ -642,6 +724,20 @@ export const UserManagement = ({ currentUser }) => {
                         </div>
 
                         <form onSubmit={handleChangePassword} className="p-6 space-y-4">
+                            {modalError && (
+                                <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                    <p className="text-sm text-red-700">{modalError}</p>
+                                </div>
+                            )}
+                            
+                            {modalSuccess && (
+                                <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+                                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                                    <p className="text-sm text-green-700">{modalSuccess}</p>
+                                </div>
+                            )}
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Current Password *</label>
                                 <div className="relative">
