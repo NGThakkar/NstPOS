@@ -1,5 +1,16 @@
 namespace CrazyPOS.Server.Dto
 {
+    public class TransactionPromotionDto
+    {
+        public long PromotionId { get; set; }
+        public string? PromotionCode { get; set; }
+        public string PromotionName { get; set; } = string.Empty;
+        public decimal DiscountAmount { get; set; }
+        public bool RequiresApproval { get; set; }
+        public long? ApprovalUserId { get; set; }
+        public string? ApprovalNote { get; set; }
+    }
+
     public class SalesTransactionDto
     {
         public long TransactionId { get; set; }
@@ -17,6 +28,7 @@ namespace CrazyPOS.Server.Dto
         public string Status { get; set; }
         public string Cashier { get; set; }
         public List<TransactionItemDto> Items { get; set; }
+        public List<TransactionPromotionDto> Promotions { get; set; } = new();
     }
 
     public class TransactionItemDto
@@ -29,6 +41,9 @@ namespace CrazyPOS.Server.Dto
         public decimal DiscountPercent { get; set; }
         public decimal DiscountAmount { get; set; }
         public decimal LineTotal { get; set; }
+        public long? PromotionId { get; set; }
+        public decimal PromotionDiscountAmount { get; set; }
+        public string? PricingRuleSnapshot { get; set; }
     }
 
     public class CreateSalesTransactionDto
@@ -41,6 +56,10 @@ namespace CrazyPOS.Server.Dto
         public decimal? AmountTendered { get; set; }
         public decimal DiscountAmount { get; set; }
         public string Notes { get; set; }
+        public string? PricingSnapshotId { get; set; }
+        public List<long> RequestedPromotionIds { get; set; } = new();
+        public string? CouponCode { get; set; }
+        public List<AppliedPromotionInputDto> AppliedPromotions { get; set; } = new();
     }
 
     public class CreateTransactionItemDto
@@ -50,6 +69,77 @@ namespace CrazyPOS.Server.Dto
         public decimal UnitPrice { get; set; }
         public decimal DiscountPercent { get; set; }
         public decimal DiscountAmount { get; set; }
+        public long? PromotionId { get; set; }
+    }
+
+    public class AppliedPromotionInputDto
+    {
+        public long PromotionId { get; set; }
+        public long? ApprovalUserId { get; set; }
+        public string? ApprovalNote { get; set; }
+    }
+
+    public class PricingPreviewRequestDto
+    {
+        public List<PricingPreviewItemDto> Items { get; set; } = new();
+        public List<long> RequestedPromotionIds { get; set; } = new();
+        public string? CouponCode { get; set; }
+    }
+
+    public class PricingPreviewItemDto
+    {
+        public long ProductId { get; set; }
+        public int Quantity { get; set; }
+    }
+
+    public class PricingPreviewResponseDto
+    {
+        public string PricingSnapshotId { get; set; } = string.Empty;
+        public decimal SubTotal { get; set; }
+        public decimal TaxAmount { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal TotalAmount { get; set; }
+        public bool RequiresApproval { get; set; }
+        public List<PricingPreviewItemResultDto> Items { get; set; } = new();
+        public List<PricingPreviewPromotionResultDto> AppliedPromotions { get; set; } = new();
+        public List<string> Warnings { get; set; } = new();
+    }
+
+    public class PricingPreviewItemResultDto
+    {
+        public long ProductId { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+        public decimal BaseLineTotal { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal LineTotal { get; set; }
+        public long? PromotionId { get; set; }
+        public decimal PromotionDiscountAmount { get; set; }
+        public string? PricingRuleSnapshot { get; set; }
+    }
+
+    public class PricingPreviewPromotionResultDto
+    {
+        public long PromotionId { get; set; }
+        public string? PromotionCode { get; set; }
+        public string PromotionName { get; set; } = string.Empty;
+        public decimal DiscountAmount { get; set; }
+        public bool RequiresApproval { get; set; }
+    }
+
+    public class ApproveDiscountRequestDto
+    {
+        public string PricingSnapshotId { get; set; } = string.Empty;
+        public string? Note { get; set; }
+    }
+
+    public class ApproveDiscountResponseDto
+    {
+        public string PricingSnapshotId { get; set; } = string.Empty;
+        public long ApprovedByUserId { get; set; }
+        public DateTime ApprovedAtUtc { get; set; }
+        public string? Note { get; set; }
     }
 
     public class BarcodeSearchDto

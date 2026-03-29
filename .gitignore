@@ -428,3 +428,4 @@ run-server.bat
 .vscode/launch.json
 .vscode/tasks.json
 docs/copilot-changes/FEAT-001_EXECUTION_PLAN.yaml
+docs/copilot-changes/FEAT-002_EXECUTION_PLAN.yaml

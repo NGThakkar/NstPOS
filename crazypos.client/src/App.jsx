@@ -7,7 +7,8 @@ import {
     Settings,
     Store,
     LogOut,
-    Users
+    Users,
+    Tag
 } from 'lucide-react';
 import { Dashboard } from './components/Dashboard';
 import { ProductCatalog } from './components/ProductCatalog';
@@ -22,6 +23,7 @@ import { CustomerManagement } from './components/CustomerManagement';
 import { Login } from './components/Login';
 import { Sales } from './components/Sales';
 import { UserManagement } from './components/UserManagement';
+import { PromotionManagement } from './components/PromotionManagement';
 import { sampleProducts } from './data/products';
 import { loadTransactionsFromDatabase, saveTransaction, loadProducts, loadCategories } from './utils/storage';
 import { getStoredToken, getStoredUser, logoutUser, validateToken } from './utils/auth';
@@ -194,7 +196,7 @@ function App() {
         setCart(prevCart => prevCart.filter(item => item.productid !== id));
     };
 
-    const handlePaymentComplete = (transaction) => {
+    const handlePaymentComplete = async (transaction) => {
         // Update inventory
         const updatedProducts = products.map(product => {
             const cartItem = cart.find(item => item.productid === product.productid);
@@ -210,10 +212,11 @@ function App() {
         // Save transaction
         const updatedTransactions = [...transactions, transaction];
         setTransactions(updatedTransactions);
-        saveTransaction(transaction);
+        const result = await saveTransaction(transaction);
 
         // Clear cart
         setCart([]);
+        return result;
     };
 
     const handleLoginSuccess = (user, token) => {
@@ -262,6 +265,7 @@ function App() {
         { id: 'sales', name: 'Sales', icon: ShoppingCart },
         { id: 'inventory', name: 'Inventory', icon: Package },
         { id: 'customers', name: 'Customers', icon: Users },
+        { id: 'promotions', name: 'Promotions', icon: Tag },
         { id: 'users', name: 'Users', icon: Users },
         { id: 'transactions', name: 'Transactions', icon: History },
         { id: 'settings', name: 'Settings', icon: Settings }
@@ -273,8 +277,8 @@ function App() {
         
         // Define which menu items are available for each role
         const rolePermissions = {
-            'Admin': ['dashboard', 'product', 'sales', 'inventory', 'customers', 'users', 'transactions', 'settings'],
-            'Manager': ['dashboard', 'product', 'sales', 'inventory', 'customers', 'transactions'],
+            'Admin': ['dashboard', 'product', 'sales', 'inventory', 'customers', 'promotions', 'users', 'transactions', 'settings'],
+            'Manager': ['dashboard', 'product', 'sales', 'inventory', 'customers', 'promotions', 'transactions'],
             'Cashier': ['dashboard', 'sales', 'customers', 'transactions']
         };
 
@@ -380,6 +384,18 @@ function App() {
                 return (<>
                     {isLoading ? (<><Spinner /></>) : (<Inventory />)}
                 </>
+                );
+            case 'promotions':
+                return (
+                    <>
+                        {isLoading ? (
+                            <div className="flex items-center justify-center h-full">
+                                <Spinner />
+                            </div>
+                        ) : (
+                            <PromotionManagement currentUser={currentUser} />
+                        )}
+                    </>
                 );
             case 'settings':
                 return (

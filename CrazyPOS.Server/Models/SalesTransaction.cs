@@ -44,4 +44,6 @@ public partial class SalesTransaction
     public virtual ICollection<TransactionItem> TransactionItems { get; set; } = new List<TransactionItem>();
 
     public virtual ICollection<PaymentTenderLog> PaymentTenderLogs { get; set; } = new List<PaymentTenderLog>();
+
+    public virtual ICollection<TransactionPromotion> TransactionPromotions { get; set; } = new List<TransactionPromotion>();
 }

@@ -1,6 +1,7 @@
 using CrazyPOS.Server.Auth;
 using CrazyPOS.Server.Dto;
 using CrazyPOS.Server.Models;
+using CrazyPOS.Server.Services.Pricing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,11 +18,16 @@ namespace CrazyPOS.Server.Controllers
     {
         private readonly IDbContextFactory<crazypos_devContext> _dbFactory;
         private readonly ICurrentUserService _currentUser;
+        private readonly IPricingEngine _pricingEngine;
 
-        public SalesController(IDbContextFactory<crazypos_devContext> dbFactory, ICurrentUserService currentUser)
+        public SalesController(
+            IDbContextFactory<crazypos_devContext> dbFactory,
+            ICurrentUserService currentUser,
+            IPricingEngine pricingEngine)
         {
             _dbFactory = dbFactory;
             _currentUser = currentUser;
+            _pricingEngine = pricingEngine;
         }
 
         /// <summary>
@@ -71,6 +77,66 @@ namespace CrazyPOS.Server.Controllers
         }
 
         /// <summary>
+        /// Preview pricing using server-side promotion rules.
+        /// </summary>
+        [HttpPost]
+        [ActionName("PreviewPricing")]
+        public async Task<IActionResult> PreviewPricing([FromBody] PricingPreviewRequestDto request)
+        {
+            if (request?.Items == null || request.Items.Count == 0)
+            {
+                return BadRequest(new { success = false, message = "At least one item is required" });
+            }
+
+            try
+            {
+                using var dbContext = _dbFactory.CreateDbContext();
+                var preview = await _pricingEngine.PreviewPricingAsync(dbContext, request, _currentUser.UserId);
+                return Ok(preview);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = $"Error previewing pricing: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Approve a pricing snapshot that has restricted discounts.
+        /// </summary>
+        [HttpPost]
+        [Authorize(Policy = "ManagerUp")]
+        [ActionName("ApproveDiscount")]
+        public IActionResult ApproveDiscount([FromBody] ApproveDiscountRequestDto request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.PricingSnapshotId))
+            {
+                return BadRequest(new { success = false, message = "Pricing snapshot ID is required" });
+            }
+
+            if (!_pricingEngine.TryApproveSnapshot(
+                    request.PricingSnapshotId,
+                    _currentUser.UserId,
+                    request.Note,
+                    out var approval,
+                    out var error))
+            {
+                return BadRequest(new { success = false, message = error ?? "Unable to approve pricing snapshot" });
+            }
+
+            return Ok(new ApproveDiscountResponseDto
+            {
+                PricingSnapshotId = approval!.PricingSnapshotId,
+                ApprovedByUserId = approval.ApprovedByUserId,
+                ApprovedAtUtc = approval.ApprovedAtUtc,
+                Note = approval.Note
+            });
+        }
+
+        /// <summary>
         /// Create a new sales transaction
         /// </summary>
         [HttpPost]
@@ -91,24 +157,90 @@ namespace CrazyPOS.Server.Controllers
             {
                 using (var dbContext = _dbFactory.CreateDbContext())
                 {
-                    // Get current user from auth context
                     long userId = _currentUser.UserId;
 
-                    // Create transaction
+                    var pricingRequest = new PricingPreviewRequestDto
+                    {
+                        Items = transactionDto.Items
+                            .Where(i => i.Quantity > 0)
+                            .Select(i => new PricingPreviewItemDto
+                            {
+                                ProductId = i.ProductId,
+                                Quantity = i.Quantity
+                            })
+                            .ToList(),
+                        RequestedPromotionIds = transactionDto.RequestedPromotionIds ?? new List<long>(),
+                        CouponCode = transactionDto.CouponCode
+                    };
+
+                    if (pricingRequest.Items.Count == 0)
+                    {
+                        return BadRequest(new { success = false, message = "At least one transaction item with positive quantity is required" });
+                    }
+
+                    PricingSnapshot pricingSnapshot;
+                    if (!string.IsNullOrWhiteSpace(transactionDto.PricingSnapshotId))
+                    {
+                        if (!_pricingEngine.TryGetSnapshot(transactionDto.PricingSnapshotId, out pricingSnapshot))
+                        {
+                            return BadRequest(new { success = false, message = "Pricing snapshot not found or expired. Recalculate pricing before checkout." });
+                        }
+
+                        if (pricingSnapshot.CreatedByUserId != userId && !_currentUser.IsInRole("Admin") && !_currentUser.IsInRole("Manager"))
+                        {
+                            return BadRequest(new { success = false, message = "Pricing snapshot does not belong to current user" });
+                        }
+
+                        var itemSignatureMismatch = pricingSnapshot.Items
+                            .OrderBy(i => i.ProductId)
+                            .Select(i => $"{i.ProductId}:{i.Quantity}")
+                            .SequenceEqual(pricingRequest.Items.OrderBy(i => i.ProductId).Select(i => $"{i.ProductId}:{i.Quantity}")) == false;
+
+                        if (itemSignatureMismatch)
+                        {
+                            return BadRequest(new { success = false, message = "Transaction items do not match pricing snapshot. Recalculate pricing before checkout." });
+                        }
+                    }
+                    else
+                    {
+                        var preview = await _pricingEngine.PreviewPricingAsync(dbContext, pricingRequest, userId);
+                        if (!_pricingEngine.TryGetSnapshot(preview.PricingSnapshotId, out pricingSnapshot))
+                        {
+                            return BadRequest(new { success = false, message = "Unable to resolve pricing snapshot for transaction" });
+                        }
+                    }
+
+                    if (pricingSnapshot.DiscountAmount > 0 && !await HasDiscountPermissionAsync(dbContext, userId))
+                    {
+                        return Forbid();
+                    }
+
+                    if (pricingSnapshot.RequiresApproval
+                        && !pricingSnapshot.ApprovedByUserId.HasValue
+                        && !_currentUser.IsInRole("Admin")
+                        && !_currentUser.IsInRole("Manager"))
+                    {
+                        return BadRequest(new { success = false, message = "Manager approval is required for one or more applied promotions" });
+                    }
+
+                    decimal amountTendered = transactionDto.AmountTendered ?? pricingSnapshot.TotalAmount;
+                    if (amountTendered < pricingSnapshot.TotalAmount)
+                    {
+                        return BadRequest(new { success = false, message = "Amount tendered cannot be less than total amount" });
+                    }
+
                     var transaction = new SalesTransaction
                     {
-                        TransactionCode = "TXN-" + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                        TransactionCode = "TXN-" + DateTime.UtcNow.ToString("yyyyMMddHHmmssfff"),
                         UserId = userId,
                         TransactionDate = DateTime.UtcNow,
-                        SubTotal = transactionDto.SubTotal,
-                        TaxAmount = transactionDto.TaxAmount,
-                        TotalAmount = transactionDto.TotalAmount,
+                        SubTotal = pricingSnapshot.SubTotal,
+                        TaxAmount = pricingSnapshot.TaxAmount,
+                        TotalAmount = pricingSnapshot.TotalAmount,
                         PaymentMethod = transactionDto.PaymentMethod,
-                        AmountTendered = transactionDto.AmountTendered,
-                        ChangeAmount = transactionDto.AmountTendered.HasValue
-                            ? transactionDto.AmountTendered.Value - transactionDto.TotalAmount
-                            : 0,
-                        DiscountAmount = transactionDto.DiscountAmount,
+                        AmountTendered = amountTendered,
+                        ChangeAmount = amountTendered - pricingSnapshot.TotalAmount,
+                        DiscountAmount = pricingSnapshot.DiscountAmount,
                         Notes = transactionDto.Notes,
                         Status = "completed",
                         IsActive = true,
@@ -118,36 +250,50 @@ namespace CrazyPOS.Server.Controllers
                     dbContext.SalesTransactions.Add(transaction);
                     await dbContext.SaveChangesAsync();
 
-                    // Add transaction items
-                    foreach (var item in transactionDto.Items)
+                    foreach (var snapshotItem in pricingSnapshot.Items)
                     {
-                        var product = await dbContext.Products.FindAsync(item.ProductId);
+                        var product = await dbContext.Products.FindAsync(snapshotItem.ProductId);
                         if (product == null)
+                        {
                             continue;
+                        }
+
+                        if ((product.Stock ?? 0) < snapshotItem.Quantity)
+                        {
+                            return BadRequest(new
+                            {
+                                success = false,
+                                message = $"Insufficient stock for product {product.Name}. Available: {product.Stock ?? 0}, requested: {snapshotItem.Quantity}"
+                            });
+                        }
+
+                        var baseLineTotal = snapshotItem.UnitPrice * snapshotItem.Quantity;
+                        var discountPercent = baseLineTotal <= 0 ? 0 : Math.Round((snapshotItem.DiscountAmount / baseLineTotal) * 100m, 2, MidpointRounding.AwayFromZero);
 
                         var transactionItem = new TransactionItem
                         {
                             TransactionId = transaction.TransactionId,
-                            Productid = item.ProductId,
-                            Quantity = item.Quantity,
-                            UnitPrice = item.UnitPrice,
-                            DiscountPercent = item.DiscountPercent,
-                            DiscountAmount = item.DiscountAmount,
-                            LineTotal = (item.UnitPrice - item.DiscountAmount) * item.Quantity,
+                            Productid = snapshotItem.ProductId,
+                            Quantity = snapshotItem.Quantity,
+                            UnitPrice = snapshotItem.UnitPrice,
+                            DiscountPercent = discountPercent,
+                            DiscountAmount = snapshotItem.DiscountAmount,
+                            PromotionId = snapshotItem.PromotionId,
+                            PromotionDiscountAmount = snapshotItem.PromotionDiscountAmount,
+                            PricingRuleSnapshot = snapshotItem.PricingRuleSnapshot,
+                            LineTotal = snapshotItem.LineTotal,
                             CreatedAt = DateTime.UtcNow
                         };
 
                         dbContext.TransactionItems.Add(transactionItem);
 
-                        // Update product stock
-                        product.Stock = (product.Stock ?? 0) - item.Quantity;
+                        product.Stock = (product.Stock ?? 0) - snapshotItem.Quantity;
                         dbContext.Products.Update(product);
 
-                        // Record inventory movement
                         var inventory = new Inventory
                         {
-                            Productid = item.ProductId,
-                            Quantity = -item.Quantity,  // Negative because it's a sale
+                            Productid = snapshotItem.ProductId,
+                            Quantity = -snapshotItem.Quantity,
                             MovementType = "Sale",
                             Reference = transaction.TransactionCode,
                             Notes = $"Sale via transaction {transaction.TransactionCode}",
@@ -158,10 +304,33 @@ namespace CrazyPOS.Server.Controllers
                         dbContext.Inventories.Add(inventory);
                     }
 
+                    foreach (var promotion in pricingSnapshot.Promotions.Where(p => p.DiscountAmount > 0))
+                    {
+                        var transactionPromotion = new TransactionPromotion
+                        {
+                            TransactionId = transaction.TransactionId,
+                            PromotionId = promotion.PromotionId,
+                            DiscountAmount = promotion.DiscountAmount,
+                            AppliedAt = DateTime.UtcNow,
+                            ApprovalUserId = promotion.RequiresApproval
+                                ? (pricingSnapshot.ApprovedByUserId ?? (_currentUser.IsInRole("Admin") || _currentUser.IsInRole("Manager") ? userId : null))
+                                : null,
+                            ApprovalNote = promotion.RequiresApproval ? pricingSnapshot.ApprovalNote : null
+                        };
+
+                        dbContext.TransactionPromotions.Add(transactionPromotion);
+
+                        var promotionEntity = await dbContext.Promotions.FirstOrDefaultAsync(p => p.PromotionId == promotion.PromotionId);
+                        if (promotionEntity != null)
+                        {
+                            promotionEntity.UsageCount += 1;
+                        }
+                    }
+
                     await dbContext.SaveChangesAsync();
 
-                    // Update daily sales summary
                     await UpdateDailySalesSummary(dbContext);
+                    _pricingEngine.RemoveSnapshot(pricingSnapshot.SnapshotId);
 
                     return Ok(new
                     {
@@ -169,7 +338,8 @@ namespace CrazyPOS.Server.Controllers
                         message = "Transaction created successfully",
                         transactionId = transaction.TransactionId,
                         transactionCode = transaction.TransactionCode,
-                        totalAmount = transaction.TotalAmount
+                        totalAmount = transaction.TotalAmount,
+                        pricingSnapshotId = pricingSnapshot.SnapshotId
                     });
                 }
             }
@@ -193,6 +363,8 @@ namespace CrazyPOS.Server.Controllers
                     var transaction = dbContext.SalesTransactions
                         .Include(t => t.TransactionItems)
                         .ThenInclude(ti => ti.Product)
+                        .Include(t => t.TransactionPromotions)
+                        .ThenInclude(tp => tp.Promotion)
                         .Include(t => t.User)
                         .FirstOrDefault(t => t.TransactionId == transactionId);
 
@@ -225,7 +397,20 @@ namespace CrazyPOS.Server.Controllers
                             UnitPrice = ti.UnitPrice,
                             DiscountPercent = ti.DiscountPercent,
                             DiscountAmount = ti.DiscountAmount,
-                            LineTotal = ti.LineTotal
+                            LineTotal = ti.LineTotal,
+                            PromotionId = ti.PromotionId,
+                            PromotionDiscountAmount = ti.PromotionDiscountAmount,
+                            PricingRuleSnapshot = ti.PricingRuleSnapshot
+                        }).ToList(),
+                        Promotions = transaction.TransactionPromotions.Select(tp => new TransactionPromotionDto
+                        {
+                            PromotionId = tp.PromotionId,
+                            PromotionCode = tp.Promotion?.PromotionCode,
+                            PromotionName = tp.Promotion?.Name ?? "Unknown promotion",
+                            DiscountAmount = tp.DiscountAmount,
+                            RequiresApproval = tp.Promotion?.RequiresApproval ?? false,
+                            ApprovalUserId = tp.ApprovalUserId,
+                            ApprovalNote = tp.ApprovalNote
                         }).ToList()
                     };
 
@@ -411,6 +596,27 @@ namespace CrazyPOS.Server.Controllers
             {
                 return BadRequest(new { success = false, message = $"Error cancelling transaction: {ex.Message}" });
             }
+        }
+
+        private async Task<bool> HasDiscountPermissionAsync(crazypos_devContext dbContext, long userId)
+        {
+            if (_currentUser.IsInRole("Admin") || _currentUser.IsInRole("Manager"))
+            {
+                return true;
+            }
+
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null)
+            {
+                return false;
+            }
+
+            return await dbContext.RolePermissions
+                .Include(rp => rp.Role)
+                .Include(rp => rp.Permission)
+                .AnyAsync(rp => rp.Role.RoleName == user.Role
+                                && rp.Permission.PermissionCode == "SALES_DISCOUNT"
+                                && rp.Permission.IsActive);
         }
 
         // Helper method to update daily sales summary

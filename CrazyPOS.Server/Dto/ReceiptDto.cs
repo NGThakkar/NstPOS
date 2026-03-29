@@ -41,6 +41,7 @@ namespace CrazyPOS.Server.Dto
         public string PaymentMethod { get; set; }
 
         public List<ReceiptItemDto> Items { get; set; } = new List<ReceiptItemDto>();
+        public List<ReceiptPromotionDto> Promotions { get; set; } = new List<ReceiptPromotionDto>();
 
         public decimal SubTotal { get; set; }
         public decimal TaxAmount { get; set; }
@@ -56,5 +57,14 @@ namespace CrazyPOS.Server.Dto
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal LineTotal { get; set; }
+    }
+
+    public class ReceiptPromotionDto
+    {
+        public long PromotionId { get; set; }
+        public string? PromotionCode { get; set; }
+        public string PromotionName { get; set; } = string.Empty;
+        public decimal DiscountAmount { get; set; }
+        public bool RequiresApproval { get; set; }
     }
 }

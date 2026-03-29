@@ -11,23 +11,27 @@ export async function createTransaction(transactionData) {
     });
 }
 
+export async function previewPricing(payload) {
+    return apiFetch('/api/Sales/PreviewPricing', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+}
+
+export async function approveDiscount(payload) {
+    return apiFetch('/api/Sales/ApproveDiscount', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+}
+
 export async function getTransaction(transactionId) {
     return apiFetch(`/api/Sales/GetTransaction?transactionId=${transactionId}`);
 }
 
 export async function getDailySalesReport(date = null) {
-    try {
-        const queryDate = date ? `&date=${date}` : '';
-        return await apiFetch(`/api/Sales/GetDailySalesReport?${queryDate}`);
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to fetch sales report');
-        }
-
-    } catch (error) {
-        console.error('Get daily sales report error:', error);
-        throw error;
-    }
+    const queryDate = date ? `date=${date}` : '';
+    return apiFetch(`/api/Sales/GetDailySalesReport${queryDate ? `?${queryDate}` : ''}`);
 }
 
 export async function getTransactionsByDateRange(startDate, endDate) {

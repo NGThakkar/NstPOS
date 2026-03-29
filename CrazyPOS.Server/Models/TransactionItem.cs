@@ -19,6 +19,12 @@ public partial class TransactionItem
 
     public decimal DiscountAmount { get; set; }
 
+    public long? PromotionId { get; set; }
+
+    public decimal PromotionDiscountAmount { get; set; }
+
+    public string PricingRuleSnapshot { get; set; }
+
     public decimal LineTotal { get; set; }
 
     public DateTime CreatedAt { get; set; }
@@ -26,4 +32,6 @@ public partial class TransactionItem
     public virtual SalesTransaction SalesTransaction { get; set; }
 
     public virtual Product Product { get; set; }
+
+    public virtual Promotion Promotion { get; set; }
 }

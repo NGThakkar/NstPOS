@@ -45,6 +45,8 @@ namespace CrazyPOS.Server.Controllers
                     var transaction = dbContext.SalesTransactions
                         .Include(t => t.TransactionItems)
                         .ThenInclude(ti => ti.Product)
+                        .Include(t => t.TransactionPromotions)
+                        .ThenInclude(tp => tp.Promotion)
                         .Include(t => t.User)
                         .Include(t => t.Customer)
                         .FirstOrDefault(t => t.TransactionId == transactionId);
@@ -97,6 +99,21 @@ namespace CrazyPOS.Server.Controllers
                                 Quantity = item.Quantity,
                                 UnitPrice = item.UnitPrice,
                                 LineTotal = item.LineTotal > 0 ? item.LineTotal : (item.UnitPrice * item.Quantity)
+                            });
+                        }
+                    }
+
+                    if (transaction.TransactionPromotions != null && transaction.TransactionPromotions.Count > 0)
+                    {
+                        foreach (var promotion in transaction.TransactionPromotions)
+                        {
+                            receiptDetail.Promotions.Add(new ReceiptPromotionDto
+                            {
+                                PromotionId = promotion.PromotionId,
+                                PromotionCode = promotion.Promotion?.PromotionCode,
+                                PromotionName = promotion.Promotion?.Name ?? "Unknown promotion",
+                                DiscountAmount = promotion.DiscountAmount,
+                                RequiresApproval = promotion.Promotion?.RequiresApproval ?? false
                             });
                         }
                     }

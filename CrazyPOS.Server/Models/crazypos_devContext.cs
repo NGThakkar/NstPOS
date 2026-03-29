@@ -31,7 +31,13 @@ public partial class crazypos_devContext : DbContext
 
     public virtual DbSet<Customer> Customers { get; set; }
 
+    public virtual DbSet<Promotion> Promotions { get; set; }
+
+    public virtual DbSet<PromotionQualifier> PromotionQualifiers { get; set; }
+
     public virtual DbSet<SalesTransaction> SalesTransactions { get; set; }
+
+    public virtual DbSet<TransactionPromotion> TransactionPromotions { get; set; }
 
     public virtual DbSet<TransactionItem> TransactionItems { get; set; }
 
@@ -335,6 +341,128 @@ public partial class crazypos_devContext : DbContext
                 .HasColumnName("last_updated");
         });
 
+        modelBuilder.Entity<Promotion>(entity =>
+        {
+            entity.ToTable("promotions");
+
+            entity.HasKey(e => e.PromotionId).HasName("PK_promotions");
+
+            entity.HasIndex(e => e.PromotionCode, "IX_promotions_code").IsUnique();
+            entity.HasIndex(e => e.IsActive, "IX_promotions_is_active");
+            entity.HasIndex(e => e.StartsAt, "IX_promotions_starts_at");
+
+            entity.Property(e => e.PromotionId).HasColumnName("promotion_id");
+            entity.Property(e => e.PromotionCode)
+                .HasMaxLength(50)
+                .HasColumnName("promotion_code");
+            entity.Property(e => e.Name)
+                .IsRequired()
+                .HasMaxLength(150)
+                .HasColumnName("name");
+            entity.Property(e => e.Description)
+                .HasColumnName("description");
+            entity.Property(e => e.PromotionType)
+                .IsRequired()
+                .HasMaxLength(30)
+                .HasColumnName("promotion_type");
+            entity.Property(e => e.ValueType)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasColumnName("value_type");
+            entity.Property(e => e.ValueAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("value_amount");
+            entity.Property(e => e.MaxDiscountAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("max_discount_amount");
+            entity.Property(e => e.MinBasketAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("min_basket_amount");
+            entity.Property(e => e.AppliesTo)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasColumnName("applies_to");
+            entity.Property(e => e.TargetCategoryId).HasColumnName("target_category_id");
+            entity.Property(e => e.TargetProductId).HasColumnName("target_product_id");
+            entity.Property(e => e.Stackable)
+                .HasDefaultValue(false)
+                .HasColumnName("stackable");
+            entity.Property(e => e.RequiresApproval)
+                .HasDefaultValue(false)
+                .HasColumnName("requires_approval");
+            entity.Property(e => e.StartsAt)
+                .HasColumnType("datetime2")
+                .HasColumnName("starts_at");
+            entity.Property(e => e.EndsAt)
+                .HasColumnType("datetime2")
+                .HasColumnName("ends_at");
+            entity.Property(e => e.UsageLimit).HasColumnName("usage_limit");
+            entity.Property(e => e.UsageCount)
+                .HasDefaultValue(0)
+                .HasColumnName("usage_count");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime2")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+
+            entity.HasOne<Product>()
+                .WithMany()
+                .HasForeignKey(e => e.TargetProductId)
+                .HasConstraintName("FK_promotions_product");
+
+            entity.HasOne<Category>()
+                .WithMany()
+                .HasForeignKey(e => e.TargetCategoryId)
+                .HasConstraintName("FK_promotions_category");
+
+            entity.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(e => e.CreatedBy)
+                .HasConstraintName("FK_promotions_created_by_users");
+
+            entity.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(e => e.UpdatedBy)
+                .HasConstraintName("FK_promotions_updated_by_users");
+        });
+
+        modelBuilder.Entity<PromotionQualifier>(entity =>
+        {
+            entity.ToTable("promotion_qualifiers");
+
+            entity.HasKey(e => e.QualifierId).HasName("PK_promotion_qualifiers");
+
+            entity.HasIndex(e => e.PromotionId, "IX_promotion_qualifiers_promotion_id");
+
+            entity.Property(e => e.QualifierId).HasColumnName("qualifier_id");
+            entity.Property(e => e.PromotionId).HasColumnName("promotion_id");
+            entity.Property(e => e.QualifierType)
+                .IsRequired()
+                .HasMaxLength(40)
+                .HasColumnName("qualifier_type");
+            entity.Property(e => e.QualifierOperator)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasColumnName("qualifier_operator");
+            entity.Property(e => e.QualifierValue)
+                .IsRequired()
+                .HasMaxLength(200)
+                .HasColumnName("qualifier_value");
+
+            entity.HasOne(d => d.Promotion)
+                .WithMany(p => p.PromotionQualifiers)
+                .HasForeignKey(d => d.PromotionId)
+                .HasConstraintName("FK_promotion_qualifiers_promotions");
+        });
+
         modelBuilder.Entity<SalesTransaction>(entity =>
         {
             entity.ToTable("sales_transactions");
@@ -424,6 +552,14 @@ public partial class crazypos_devContext : DbContext
             entity.Property(e => e.DiscountAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("discount_amount");
+            entity.Property(e => e.PromotionId)
+                .HasColumnName("promotion_id");
+            entity.Property(e => e.PromotionDiscountAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasDefaultValue(0)
+                .HasColumnName("promotion_discount_amount");
+            entity.Property(e => e.PricingRuleSnapshot)
+                .HasColumnName("pricing_rule_snapshot");
             entity.Property(e => e.LineTotal)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("line_total");
@@ -439,6 +575,50 @@ public partial class crazypos_devContext : DbContext
             entity.HasOne(d => d.Product).WithMany(p => p.TransactionItems)
                 .HasForeignKey(d => d.Productid)
                 .HasConstraintName("FK_transaction_items_product");
+
+            entity.HasOne(d => d.Promotion).WithMany()
+                .HasForeignKey(d => d.PromotionId)
+                .HasConstraintName("FK_transaction_items_promotions");
+        });
+
+        modelBuilder.Entity<TransactionPromotion>(entity =>
+        {
+            entity.ToTable("transaction_promotions");
+
+            entity.HasKey(e => e.TransactionPromotionId).HasName("PK_transaction_promotions");
+
+            entity.HasIndex(e => e.TransactionId, "IX_transaction_promotions_transaction_id");
+            entity.HasIndex(e => e.PromotionId, "IX_transaction_promotions_promotion_id");
+
+            entity.Property(e => e.TransactionPromotionId).HasColumnName("transaction_promotion_id");
+            entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
+            entity.Property(e => e.PromotionId).HasColumnName("promotion_id");
+            entity.Property(e => e.ApprovalUserId).HasColumnName("approval_user_id");
+            entity.Property(e => e.ApprovalNote)
+                .HasMaxLength(500)
+                .HasColumnName("approval_note");
+            entity.Property(e => e.DiscountAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("discount_amount");
+            entity.Property(e => e.AppliedAt)
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnName("applied_at");
+
+            entity.HasOne(d => d.SalesTransaction)
+                .WithMany(p => p.TransactionPromotions)
+                .HasForeignKey(d => d.TransactionId)
+                .HasConstraintName("FK_transaction_promotions_sales_transactions");
+
+            entity.HasOne(d => d.Promotion)
+                .WithMany(p => p.TransactionPromotions)
+                .HasForeignKey(d => d.PromotionId)
+                .HasConstraintName("FK_transaction_promotions_promotions");
+
+            entity.HasOne(d => d.ApprovalUser)
+                .WithMany()
+                .HasForeignKey(d => d.ApprovalUserId)
+                .HasConstraintName("FK_transaction_promotions_users");
         });
 
         modelBuilder.Entity<PaymentMethod>(entity =>

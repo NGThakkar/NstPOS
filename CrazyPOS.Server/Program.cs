@@ -1,6 +1,7 @@
 using CrazyPOS.Server.Auth;
 using CrazyPOS.Server.Models;
 using CrazyPOS.Server.Services;
+using CrazyPOS.Server.Services.Pricing;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,6 +55,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
+builder.Services.AddSingleton<IPricingEngine, PricingEngine>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

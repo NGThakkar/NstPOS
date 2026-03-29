@@ -5,9 +5,65 @@ export async function getTransactionDetails(transactionId) {
 }
 
 export const loadTransactions = () => {
-    const stored = localStorage.getItem('craypos-transactions');
-    return stored ? JSON.parse(stored) : [];
+    try {
+        const stored = localStorage.getItem('craypos-transactions');
+        return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+        console.warn('loadTransactions: Failed to parse cached transactions, resetting cache.', error);
+        localStorage.removeItem('craypos-transactions');
+        return [];
+    }
 };
+
+function toCompactTransaction(transaction) {
+    return {
+        id: transaction.id,
+        timestamp: transaction.timestamp,
+        paymentMethod: transaction.paymentMethod,
+        total: transaction.total,
+        subtotal: transaction.subtotal,
+        tax: transaction.tax,
+        discount: transaction.discount,
+        couponCode: transaction.couponCode,
+        itemCount: Array.isArray(transaction.items)
+            ? transaction.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
+            : 0,
+        items: Array.isArray(transaction.items)
+            ? transaction.items.map(item => ({
+                productid: item.productid,
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+            }))
+            : []
+    };
+}
+
+function tryPersistTransactions(compactTransaction, maxHistory = 200) {
+    const transactions = loadTransactions();
+    transactions.push(compactTransaction);
+
+    if (transactions.length > maxHistory) {
+        transactions.splice(0, transactions.length - maxHistory);
+    }
+
+    // Try save first; if quota is exceeded, trim oldest entries until it fits.
+    while (transactions.length > 0) {
+        try {
+            localStorage.setItem('craypos-transactions', JSON.stringify(transactions));
+            return true;
+        } catch (error) {
+            if (error?.name !== 'QuotaExceededError' && error?.code !== 22) {
+                console.warn('saveTransaction: Unexpected localStorage error.', error);
+                return false;
+            }
+
+            transactions.shift();
+        }
+    }
+
+    return false;
+}
 
 // Load transactions from the past year from the backend database
 export async function loadTransactionsFromDatabase() {
@@ -30,10 +86,12 @@ export async function loadTransactionsFromDatabase() {
 }
 export const saveTransaction = async (transaction) => {
     console.log('storage.saveTransaction: Saving transaction locally and to backend');
-    
-    const transactions = loadTransactions();
-    transactions.push(transaction);
-    localStorage.setItem('craypos-transactions', JSON.stringify(transactions));
+
+    const compactTransaction = toCompactTransaction(transaction);
+    const localSaveSucceeded = tryPersistTransactions(compactTransaction);
+    if (!localSaveSucceeded) {
+        console.warn('storage.saveTransaction: local transaction cache full or unavailable, continuing with backend save only.');
+    }
     
     // Also save to backend database
     try {
@@ -43,10 +101,12 @@ export const saveTransaction = async (transaction) => {
         return result; // ? Return the backend result with transactionId
     } catch (error) {
         console.error('storage.saveTransaction: Error saving transaction to backend:', error);
-        // Transaction is saved locally even if backend fails
+        // Transaction may still be cached locally even when backend call fails.
         return { 
             success: false, 
-            message: 'Transaction saved locally but backend call failed',
+            message: localSaveSucceeded
+                ? 'Transaction saved locally but backend call failed'
+                : 'Transaction could not be cached locally and backend call failed',
             transactionId: null
         };
     }
@@ -60,7 +120,8 @@ export async function saveSaleTransaction(transaction) {
                 quantity: item.quantity,
                 unitPrice: item.price,
                 discountPercent: 0,
-                discountAmount: 0
+                discountAmount: 0,
+                promotionId: item.promotionId || null
             })),
             subTotal: transaction.subtotal,
             taxAmount: transaction.tax,
@@ -68,7 +129,11 @@ export async function saveSaleTransaction(transaction) {
             paymentMethod: transaction.paymentMethod,
             amountTendered: transaction.amountTendered || transaction.total,
             discountAmount: transaction.discount || 0,
-            notes: transaction.cashier ? `Cashier: ${transaction.cashier}` : 'POS Sale'
+            notes: transaction.cashier ? `Cashier: ${transaction.cashier}` : 'POS Sale',
+            pricingSnapshotId: transaction.pricingSnapshotId || null,
+            requestedPromotionIds: transaction.requestedPromotionIds || [],
+            couponCode: transaction.couponCode || null,
+            appliedPromotions: transaction.appliedPromotions || []
         };
 
         const result = await apiFetch('/api/Sales/CreateTransaction', {
