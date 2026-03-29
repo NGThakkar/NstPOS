@@ -1,10 +1,12 @@
 using CrazyPOS.Server.Auth;
 using CrazyPOS.Server.Dto;
 using CrazyPOS.Server.Models;
+using CrazyPOS.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -16,11 +18,16 @@ namespace CrazyPOS.Server.Controllers
     {
         private readonly IDbContextFactory<crazypos_devContext> _dbFactory;
         private readonly SecuritySettings _security;
+        private readonly IRequestTokenService _requestTokenService;
 
-        public AuthController(IDbContextFactory<crazypos_devContext> dbFactory, IOptions<SecuritySettings> securitySettings)
+        public AuthController(
+            IDbContextFactory<crazypos_devContext> dbFactory,
+            IOptions<SecuritySettings> securitySettings,
+            IRequestTokenService requestTokenService)
         {
             _dbFactory = dbFactory;
             _security = securitySettings.Value;
+            _requestTokenService = requestTokenService;
         }
 
         [HttpPost]
@@ -589,6 +596,32 @@ namespace CrazyPOS.Server.Controllers
             {
                 return BadRequest(new { success = false, message = $"Change password failed: {ex.Message}" });
             }
+        }
+
+        /// <summary>
+        /// Issues a fresh single-use request token bound to the caller's current session.
+        /// The returned token must be sent as the X-Request-Token header on the next
+        /// authenticated request.  Each token is valid for one use only.
+        /// This endpoint is itself exempt from per-request token enforcement.
+        /// </summary>
+        [Authorize]
+        [HttpPost]
+        [ActionName("IssueRequestToken")]
+        [SkipRequestToken]
+        public async Task<IActionResult> IssueRequestToken()
+        {
+            var sessionIdValue = User.FindFirst("SessionId")?.Value;
+            if (!long.TryParse(sessionIdValue, out var sessionId))
+                return Unauthorized(new { success = false, message = "Session claim is missing or malformed." });
+
+            var token = await _requestTokenService.IssueAsync(sessionId, HttpContext.RequestAborted);
+
+            return Ok(new IssueRequestTokenResponseDto
+            {
+                Token = token,
+                ExpiresAt = DateTime.UtcNow.AddSeconds(_security.RequestTokenTTLSeconds),
+                TtlSeconds = _security.RequestTokenTTLSeconds
+            });
         }
 
         // Helper methods

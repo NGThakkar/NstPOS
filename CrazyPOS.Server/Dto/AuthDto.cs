@@ -58,4 +58,15 @@ namespace CrazyPOS.Server.Dto
         public string CurrentPassword { get; set; }
         public string NewPassword { get; set; }
     }
+
+    /// <summary>Response from POST /api/Auth/IssueRequestToken.</summary>
+    public class IssueRequestTokenResponseDto
+    {
+        /// <summary>Plaintext single-use token. Send as X-Request-Token on the next authenticated call.</summary>
+        public string Token { get; set; }
+        /// <summary>UTC time at which this token expires.</summary>
+        public DateTime ExpiresAt { get; set; }
+        /// <summary>Seconds until this token expires.</summary>
+        public int TtlSeconds { get; set; }
+    }
 }

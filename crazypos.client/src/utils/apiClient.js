@@ -20,7 +20,7 @@ export function apiUrl(path) {
  * @returns {Promise<any>}  parsed JSON body
  */
 export async function apiFetch(path, options = {}) {
-    const token = sessionStorage.getItem('authToken');
+    const sessionToken = sessionStorage.getItem('authToken');
 
     const isFormData = options.body instanceof FormData;
     const headers = {
@@ -29,9 +29,12 @@ export async function apiFetch(path, options = {}) {
         ...(options.headers ?? {}),
     };
 
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-        headers['X-Auth-Token'] = token;
+    if (sessionToken) {
+        // Acquire a fresh single-use request token before attaching credentials.
+        const requestToken = await acquireRequestToken(sessionToken);
+        headers['Authorization'] = `Bearer ${sessionToken}`;
+        headers['X-Auth-Token'] = sessionToken;
+        headers['X-Request-Token'] = requestToken;
     }
 
     const response = await fetch(apiUrl(path), { ...options, headers });
@@ -69,4 +72,39 @@ export class ApiError extends Error {
         this.status = status;
         this.statusText = statusText;
     }
+}
+
+/**
+ * Fetches a fresh single-use request token from the server.
+ * Called automatically by apiFetch before every authenticated request.
+ * Uses raw fetch (not apiFetch) to avoid a recursive call.
+ *
+ * Each call to apiFetch gets its own independent token, so parallel calls
+ * are safe — they each acquire a distinct token.
+ *
+ * @param {string} sessionToken  The current session bearer token.
+ * @returns {Promise<string>}    Plaintext single-use token to send as X-Request-Token.
+ */
+async function acquireRequestToken(sessionToken) {
+    const response = await fetch(apiUrl('/api/Auth/IssueRequestToken'), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionToken}`,
+            'X-Auth-Token': sessionToken,
+        },
+    });
+
+    if (response.status === 401) {
+        window.dispatchEvent(new CustomEvent('session:expired'));
+        throw new ApiError(401, 'Unauthorized', 'Your session has expired. Please log in again.');
+    }
+
+    if (!response.ok) {
+        throw new ApiError(response.status, response.statusText,
+            'Failed to acquire a request token. Please try again.');
+    }
+
+    const data = await response.json();
+    return data.token;
 }

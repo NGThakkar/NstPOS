@@ -55,6 +55,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
+builder.Services.AddScoped<IRequestTokenService, RequestTokenService>();
 builder.Services.AddSingleton<IPricingEngine, PricingEngine>();
 
 builder.Services.AddControllers();
@@ -77,6 +78,7 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseAuthentication();
+app.UseMiddleware<RequestTokenMiddleware>();   // per-request single-use token enforcement
 app.UseAuthorization();
 
 app.MapControllers();
