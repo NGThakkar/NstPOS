@@ -1,0 +1,581 @@
+feature_id: FEAT-003
+title: Refunds and Returns Management
+priority: P1
+status: planned
+source_documents:
+  - docs/roadmap.md
+  - docs/api/Sales.md
+  - docs/api/Receipt.md
+summary:
+  purpose: Support post-sale service workflows with partial returns, tracked refunds, restocking decisions, and return-specific receipts.
+  business_outcomes:
+    - allow supervisors and authorized cashiers to process partial item returns without cancelling the full sale
+    - preserve accurate stock, tax, and discount reversal on returned items
+    - track refund settlement state for cash and non-cash tenders
+    - provide clear auditability across transaction history, receipts, and reporting
+scope:
+  in_scope:
+    - return and refund domain entities linked to original sales transactions and line items
+    - server-side return preview and finalization workflow for partial and full returns
+    - restock, damaged, and discard disposition handling for returned inventory
+    - refund settlement tracking for cash, card, and mixed original tenders
+    - return receipt generation and transaction history visibility
+    - authorization, validation, and audit hooks around return processing
+  out_of_scope:
+    - direct payment-processor refund execution
+    - omnichannel returns across multiple stores before FEAT-008
+    - customer self-service returns or external RMA portals
+    - exchange-order workflows that create replacement sales in the same transaction
+functional_components:
+  - id: FC-001
+    name: Return eligibility and calculation
+    responsibilities:
+      - validate that returned quantities do not exceed sold quantities
+      - calculate prorated subtotal, discount reversal, tax reversal, and refund total from original line data
+      - enforce business rules for non-returnable or already fully returned items
+  - id: FC-002
+    name: Return authorization and approval
+    responsibilities:
+      - restrict return creation and refund settlement by role or permission
+      - require manager approval for high-value, aged, or no-receipt returns if policy demands it
+      - record approval actor, reason, and timestamps in audit trail
+  - id: FC-003
+    name: Inventory disposition processing
+    responsibilities:
+      - restock sellable returns into inventory
+      - keep damaged or discarded items out of available stock
+      - write return-specific inventory movements with transaction and return references
+  - id: FC-004
+    name: Refund settlement tracking
+    responsibilities:
+      - capture refund method, settlement status, and reference identifiers
+      - support immediate cash refunds and pending manual settlement for non-cash tenders
+      - expose refund status in transaction history and return details
+  - id: FC-005
+    name: Return history and receipt experience
+    responsibilities:
+      - surface return summary on original transactions
+      - expose dedicated return detail and return receipt APIs
+      - allow cashier or supervisor workflows from transaction history and receipt screens
+current_state_assessment:
+  backend:
+    observed_files:
+      - CrazyPOS.Server/Controllers/SalesController.cs
+      - CrazyPOS.Server/Controllers/ReceiptController.cs
+      - CrazyPOS.Server/Dto/SalesDto.cs
+      - CrazyPOS.Server/Dto/ReceiptDto.cs
+      - CrazyPOS.Server/Models/SalesTransaction.cs
+      - CrazyPOS.Server/Models/TransactionItem.cs
+      - CrazyPOS.Server/Models/PaymentTenderLog.cs
+      - CrazyPOS.Server/Models/Inventory.cs
+      - CrazyPOS.Server/Models/crazypos_devContext.cs
+    existing_capability:
+      - CreateTransaction persists completed sales, promotion attribution, and sale inventory movements
+      - CancelTransaction performs full-sale reversal only and restores all line quantities in one step
+      - ReceiptController renders sale receipts with item and promotion details
+      - PaymentTenderLog stores original payment records but no refund settlement lifecycle exists
+    gaps:
+      - no return, return item, or refund settlement entities
+      - no line-level returned quantity tracking on transaction items
+      - no server-side preview endpoint for partial refunds
+      - no return-specific receipt contract or reporting summary
+  frontend:
+    observed_files:
+      - crazypos.client/src/components/TransactionHistory.jsx
+      - crazypos.client/src/components/ReceiptModal.jsx
+      - crazypos.client/src/components/PaymentModal.jsx
+      - crazypos.client/src/components/Sales.jsx
+      - crazypos.client/src/utils/sales.js
+      - crazypos.client/src/utils/storage.js
+      - crazypos.client/src/App.jsx
+    existing_capability:
+      - transaction history can filter, export, and open detailed transaction views
+      - receipt modal can fetch, print, email, and SMS sale receipts
+      - client utilities support transaction creation, lookup, and full cancellation
+    gaps:
+      - no return action, return detail screen, or refund-settlement UI
+      - no return-aware transaction badges, totals, or status filters
+      - no return receipt rendering path
+      - no frontend test harness is installed yet
+technical_considerations:
+  - FEAT-001 must be complete first so return and refund actions inherit authenticated, policy-enforced API access.
+  - FEAT-002 is already implemented, so refund calculations must reverse persisted discount attribution instead of recalculating from current promotion rules.
+  - FEAT-007 is not yet implemented, so card and digital refunds should be tracked as manual or pending settlements rather than processor-executed reversals.
+  - CancelTransaction should remain available for full void scenarios; FEAT-003 covers post-sale returns and partial refunds on completed transactions.
+  - Return logic must prevent cumulative returned quantity from exceeding the original sold quantity for each transaction item.
+  - Inventory updates must separate sellable restocks from damaged or discarded returns to avoid inflating stock on unsellable items.
+  - Tax and discount reversal must use deterministic proration rules and consistent rounding on partial quantities.
+dependencies:
+  feature_dependencies:
+    - FEAT-001 Security and Configuration Hardening (required)
+    - FEAT-002 Discount and Promotion Engine (required for discounted transaction refunds)
+    - FEAT-007 Payment Gateway and Terminal Integration (deferred dependency for automated processor refunds only)
+  module_dependencies:
+    - sales persistence and transaction reads in CrazyPOS.Server/Controllers/SalesController.cs
+    - receipt generation in CrazyPOS.Server/Controllers/ReceiptController.cs and CrazyPOS.Server/Dto/ReceiptDto.cs
+    - inventory movement persistence in CrazyPOS.Server/Models/Inventory.cs and POS inventory APIs
+    - transaction history and receipt UX in crazypos.client/src/components/TransactionHistory.jsx and crazypos.client/src/components/ReceiptModal.jsx
+  permission_dependencies:
+    - existing ManagerUp or Admin policy from FEAT-001 for supervisory approval
+    - new SALES_RETURN_CREATE permission for starting returns
+    - new SALES_RETURN_APPROVE permission for approval-required returns
+    - new SALES_REFUND_SETTLE permission for completing non-cash refund settlement updates
+  external_libraries:
+    backend:
+      - name: FluentValidation
+        required: optional
+        purpose: validate return preview and finalization payloads with reusable business rules
+    frontend:
+      - name: zod
+        required: optional
+        purpose: validate return form payloads and settlement updates on the client
+      - name: react-hook-form
+        required: optional
+        purpose: manage complex return item selection and refund settlement forms
+    tooling:
+      - name: xunit
+        required: true
+        purpose: backend unit and integration tests
+      - name: Microsoft.AspNetCore.Mvc.Testing
+        required: true
+        purpose: end-to-end API tests for return workflows
+      - name: vitest
+        required: true
+        purpose: frontend unit tests for return state and calculations
+      - name: @testing-library/react
+        required: true
+        purpose: frontend workflow and regression tests
+      - name: @testing-library/jest-dom
+        required: true
+        purpose: frontend DOM assertions
+api_contract_changes:
+  new_endpoints:
+    - method: POST
+      path: /api/Return/PreviewReturn
+      authorization: authenticated_with_return_permission
+      request: ReturnPreviewRequestDto
+      response: ReturnPreviewResponseDto
+    - method: POST
+      path: /api/Return/CreateReturn
+      authorization: authenticated_with_return_permission
+      request: CreateReturnDto
+      response: ReturnDetailDto
+    - method: GET
+      path: /api/Return/GetReturn
+      authorization: authenticated
+      request: returnId query parameter
+      response: ReturnDetailDto
+    - method: GET
+      path: /api/Return/GetReturnsByDateRange
+      authorization: authenticated
+      request: startDate and endDate query parameters
+      response: ReturnSummaryDto[]
+    - method: POST
+      path: /api/Return/UpdateRefundSettlement
+      authorization: manager_or_admin_or_refund_settlement_permission
+      request: UpdateRefundSettlementDto
+      response: RefundSettlementDto
+    - method: GET
+      path: /api/Receipt/GetReturnReceiptDetails
+      authorization: authenticated
+      request: returnId query parameter
+      response: ReturnReceiptDetailDto
+  updated_endpoints:
+    - method: GET
+      path: /api/Sales/GetTransaction
+      change: include return summary, refunded amount, per-line returned quantity, and linked return records
+    - method: GET
+      path: /api/Sales/GetTransactionsByDateRange
+      change: include returnStatus, refundedAmount, and hasOpenRefundSettlement flags for transaction history filters
+    - method: POST
+      path: /api/Sales/CancelTransaction
+      change: explicitly block usage once a partial return exists on the transaction
+database_updates:
+  schema_changes:
+    - table: sales_returns
+      columns:
+        - return_id bigint pk
+        - return_code nvarchar(40) not null unique
+        - original_transaction_id bigint not null fk -> sales_transactions
+        - customer_id bigint nullable fk -> customers
+        - processed_by_user_id bigint not null fk -> users
+        - approved_by_user_id bigint nullable fk -> users
+        - return_date datetime2 not null
+        - status nvarchar(30) not null
+        - refund_status nvarchar(30) not null
+        - reason_code nvarchar(40) not null
+        - reason_notes nvarchar(500) nullable
+        - subtotal_reversal decimal(18,2) not null
+        - tax_reversal decimal(18,2) not null
+        - discount_reversal decimal(18,2) not null
+        - refund_total decimal(18,2) not null
+        - notes nvarchar(500) nullable
+        - created_at datetime2 not null
+        - updated_at datetime2 nullable
+    - table: return_items
+      columns:
+        - return_item_id bigint pk
+        - return_id bigint not null fk -> sales_returns
+        - original_transaction_item_id bigint not null fk -> transaction_items
+        - product_id bigint not null fk -> products
+        - quantity int not null
+        - unit_price decimal(18,2) not null
+        - discount_reversal decimal(18,2) not null
+        - tax_reversal decimal(18,2) not null
+        - refund_line_total decimal(18,2) not null
+        - inventory_disposition nvarchar(20) not null
+        - disposition_notes nvarchar(300) nullable
+        - created_at datetime2 not null
+    - table: refund_settlements
+      columns:
+        - refund_settlement_id bigint pk
+        - return_id bigint not null fk -> sales_returns
+        - refund_method nvarchar(30) not null
+        - amount decimal(18,2) not null
+        - settlement_status nvarchar(30) not null
+        - payment_reference nvarchar(120) nullable
+        - processed_by_user_id bigint nullable fk -> users
+        - processed_at datetime2 nullable
+        - notes nvarchar(500) nullable
+        - created_at datetime2 not null
+    - table: sales_transactions
+      changes:
+        - add refunded_amount decimal(18,2) not null default 0
+        - add return_status nvarchar(20) not null default 'none'
+    - table: transaction_items
+      changes:
+        - add returned_quantity int not null default 0
+  migration_artifacts:
+    - add EF Core migration under CrazyPOS.Server/Database/Migrations
+    - add or update SQL rollout scripts under CrazyPOS.Server/Database for controlled deployment environments
+tasks:
+  - id: FEAT-003-T01
+    title: Define return policy, approval rules, and reason taxonomy
+    phase: design
+    priority: high
+    depends_on:
+      - FEAT-001
+      - FEAT-002
+    outputs:
+      - return eligibility matrix
+      - approval thresholds and settlement-state definitions
+      - reason-code taxonomy and proration rules
+    code_changes:
+      - docs/copilot-changes/FEAT-003_EXECUTION_PLAN.yaml
+      - docs/conventions.md
+      - docs/api/Sales.md
+  - id: FEAT-003-T02
+    title: Add return, return item, and refund settlement entities
+    phase: implementation
+    priority: high
+    depends_on:
+      - FEAT-003-T01
+    outputs:
+      - SalesReturn, ReturnItem, and RefundSettlement models
+      - sales transaction and transaction item return summary fields
+      - DbContext registrations and relationships
+    code_changes:
+      - CrazyPOS.Server/Models/SalesReturn.cs
+      - CrazyPOS.Server/Models/ReturnItem.cs
+      - CrazyPOS.Server/Models/RefundSettlement.cs
+      - CrazyPOS.Server/Models/SalesTransaction.cs
+      - CrazyPOS.Server/Models/TransactionItem.cs
+      - CrazyPOS.Server/Models/crazypos_devContext.cs
+  - id: FEAT-003-T03
+    title: Create database migration and rollout scripts
+    phase: implementation
+    priority: high
+    depends_on:
+      - FEAT-003-T02
+    outputs:
+      - EF migration files
+      - rollout SQL script updates
+    code_changes:
+      - CrazyPOS.Server/Database/Migrations/
+      - CrazyPOS.Server/Database/
+  - id: FEAT-003-T04
+    title: Introduce return DTOs and validation contracts
+    phase: implementation
+    priority: high
+    depends_on:
+      - FEAT-003-T02
+    outputs:
+      - ReturnPreviewRequestDto and ReturnPreviewResponseDto
+      - CreateReturnDto, ReturnDetailDto, ReturnSummaryDto, RefundSettlementDto
+      - request validation rules for quantities, reasons, and settlement status
+    code_changes:
+      - CrazyPOS.Server/Dto/ReturnDto.cs
+      - CrazyPOS.Server/Dto/SalesDto.cs
+      - CrazyPOS.Server/Dto/ReceiptDto.cs
+      - CrazyPOS.Server/Services/Validation/
+  - id: FEAT-003-T05
+    title: Implement return calculation service
+    phase: implementation
+    priority: high
+    depends_on:
+      - FEAT-003-T04
+    outputs:
+      - deterministic return preview service for proration and eligibility checks
+      - cumulative quantity guard against over-return
+      - refund status defaults based on refund method
+    code_changes:
+      - CrazyPOS.Server/Services/Returns/IReturnCalculationService.cs
+      - CrazyPOS.Server/Services/Returns/ReturnCalculationService.cs
+      - CrazyPOS.Server/Services/Returns/ReturnModels.cs
+      - CrazyPOS.Server/Program.cs
+  - id: FEAT-003-T06
+    title: Implement return and refund API controller
+    phase: implementation
+    priority: high
+    depends_on:
+      - FEAT-003-T03
+      - FEAT-003-T05
+    outputs:
+      - ReturnController with preview, create, detail, list, and settlement endpoints
+      - permission and approval enforcement for return-sensitive actions
+    code_changes:
+      - CrazyPOS.Server/Controllers/ReturnController.cs
+      - CrazyPOS.Server/Program.cs
+      - CrazyPOS.Server/Controllers/RoleController.cs
+      - CrazyPOS.Server/Models/RoleModels.cs
+  - id: FEAT-003-T07
+    title: Integrate inventory disposition and audit logging
+    phase: implementation
+    priority: high
+    depends_on:
+      - FEAT-003-T06
+    outputs:
+      - restock and damaged-item inventory movement handling
+      - audit records for return creation, approval, and settlement updates
+      - cancellation guard when partial returns already exist
+    code_changes:
+      - CrazyPOS.Server/Controllers/ReturnController.cs
+      - CrazyPOS.Server/Controllers/SalesController.cs
+      - CrazyPOS.Server/Models/Inventory.cs
+      - CrazyPOS.Server/Database/RoleBasedAccessControl.sql
+  - id: FEAT-003-T08
+    title: Extend transaction and receipt read models
+    phase: implementation
+    priority: high
+    depends_on:
+      - FEAT-003-T06
+      - FEAT-003-T07
+    outputs:
+      - original transaction details show return summary and per-line returned quantity
+      - return receipt contract and receipt endpoint
+      - receipt formatting for refunds and negative line summaries
+    code_changes:
+      - CrazyPOS.Server/Controllers/SalesController.cs
+      - CrazyPOS.Server/Controllers/ReceiptController.cs
+      - CrazyPOS.Server/Dto/SalesDto.cs
+      - CrazyPOS.Server/Dto/ReceiptDto.cs
+      - CrazyPOS.Server/Services/IReceiptService.cs
+      - CrazyPOS.Server/Services/ReceiptService.cs
+  - id: FEAT-003-T09
+    title: Add frontend return API utilities
+    phase: implementation
+    priority: high
+    depends_on:
+      - FEAT-003-T06
+      - FEAT-003-T08
+    outputs:
+      - client helpers for previewing, creating, listing, and settling returns
+      - return receipt fetch helpers
+    code_changes:
+      - crazypos.client/src/utils/returns.js
+      - crazypos.client/src/utils/sales.js
+      - crazypos.client/src/utils/storage.js
+  - id: FEAT-003-T10
+    title: Build transaction-history return workflow UI
+    phase: implementation
+    priority: high
+    depends_on:
+      - FEAT-003-T09
+    outputs:
+      - return action entry from transaction history detail flow
+      - item selection, reason capture, disposition, and settlement form
+      - return status chips and refunded amount visibility
+    code_changes:
+      - crazypos.client/src/components/TransactionHistory.jsx
+      - crazypos.client/src/components/ReturnModal.jsx
+      - crazypos.client/src/App.jsx
+  - id: FEAT-003-T11
+    title: Extend receipt and transaction detail UX for returns
+    phase: implementation
+    priority: medium
+    depends_on:
+      - FEAT-003-T10
+    outputs:
+      - return receipt print or send flow
+      - return summary display in receipt modal and transaction detail view
+      - supervisor-friendly settlement status messaging
+    code_changes:
+      - crazypos.client/src/components/ReceiptModal.jsx
+      - crazypos.client/src/components/PaymentModal.jsx
+      - crazypos.client/src/components/TransactionHistory.jsx
+  - id: FEAT-003-T12
+    title: Seed permissions and return reason defaults
+    phase: implementation
+    priority: medium
+    depends_on:
+      - FEAT-003-T06
+    outputs:
+      - permission codes for returns and settlement actions
+      - baseline reason codes or configuration seed data
+    code_changes:
+      - CrazyPOS.Server/Database/RoleBasedAccessControl.sql
+      - CrazyPOS.Server/Database/
+  - id: FEAT-003-T13
+    title: Add backend automated tests
+    phase: testing
+    priority: high
+    depends_on:
+      - FEAT-003-T08
+      - FEAT-003-T12
+    outputs:
+      - return calculation unit tests
+      - API integration tests for preview, create, settlement, and receipt flows
+      - regression tests for over-return prevention and discounted transaction proration
+    code_changes:
+      - CrazyPOS.Server.Tests/
+  - id: FEAT-003-T14
+    title: Add frontend automated tests
+    phase: testing
+    priority: high
+    depends_on:
+      - FEAT-003-T10
+      - FEAT-003-T11
+    outputs:
+      - return modal validation tests
+      - transaction history return-status rendering tests
+      - receipt modal return summary tests
+    code_changes:
+      - crazypos.client/package.json
+      - crazypos.client/src/components/__tests__/
+      - crazypos.client/src/utils/__tests__/
+  - id: FEAT-003-T15
+    title: Execute UAT and staged rollout
+    phase: rollout
+    priority: high
+    depends_on:
+      - FEAT-003-T13
+      - FEAT-003-T14
+      - FEAT-003-T12
+    outputs:
+      - signed supervisor UAT checklist
+      - staged rollout and rollback runbook
+      - pilot feedback log for return and refund operations
+    code_changes:
+      - docs/copilot-changes/FEAT-003_ROLLOUT_CHECKLIST.md
+execution_sequence:
+  wave_1_policy_and_schema:
+    order:
+      - FEAT-003-T01
+      - FEAT-003-T02
+      - FEAT-003-T03
+      - FEAT-003-T04
+    exit_criteria:
+      - return policy and proration rules are documented
+      - schema exists for returns, return items, and settlement tracking
+      - API contracts are stable enough for UI work
+  wave_2_backend_workflows:
+    order:
+      - FEAT-003-T05
+      - FEAT-003-T06
+      - FEAT-003-T07
+      - FEAT-003-T08
+      - FEAT-003-T12
+    exit_criteria:
+      - backend can preview and persist partial returns safely
+      - inventory and audit behavior is deterministic
+      - transaction and receipt reads expose return data
+  wave_3_frontend_workflows:
+    order:
+      - FEAT-003-T09
+      - FEAT-003-T10
+      - FEAT-003-T11
+    exit_criteria:
+      - supervisors can process a return from transaction history without manual database edits
+      - return receipts and refund statuses are visible in the client
+  wave_4_quality_and_rollout:
+    order:
+      - FEAT-003-T13
+      - FEAT-003-T14
+      - FEAT-003-T15
+    exit_criteria:
+      - automated tests pass for critical return scenarios
+      - pilot rollout completes with reconciled stock and refund logs
+testing_plan:
+  unit_tests:
+    backend:
+      - partial return proration correctly reverses subtotal, discount, and tax from original line data
+      - return preview blocks quantities above remaining returnable quantity
+      - refund status defaults map correctly for cash, card, and manual settlement methods
+      - damaged-item disposition does not restock inventory
+    frontend:
+      - return modal computes selection state and validation messages correctly
+      - transaction history badges render based on returnStatus and refundedAmount
+      - receipt modal displays return-specific totals and settlement messaging
+  integration_tests:
+    - create a completed sale, preview a partial return, and finalize it successfully
+    - attempt a second return that exceeds the original sold quantity and expect validation failure
+    - create a discounted transaction return and verify discount and tax reversal matches persisted sale data
+    - create a return with non-restock disposition and verify product stock remains unchanged
+    - verify unauthorized users cannot finalize or settle returns beyond their permission scope
+    - verify return receipt endpoint returns the finalized return detail
+  end_to_end_uat:
+    - cashier or supervisor processes a partial return with one restocked line and one damaged line
+    - supervisor records a cash refund and hands back exact tender amount
+    - supervisor records a card refund as pending manual settlement and later marks it completed
+    - transaction history and printed return receipt show matching refunded totals and statuses
+  non_functional_tests:
+    - concurrent returns on the same transaction item do not over-credit stock or refund amount
+    - migration rollback rehearsal completes on staging
+    - transaction history performance remains acceptable with return summary joins enabled
+deployment_plan:
+  rollout_strategy:
+    - step: deploy database migration first with return actions disabled by configuration
+    - step: deploy backend return APIs and seed permissions or reason codes
+    - step: deploy frontend return workflow to supervisors only for pilot period
+    - step: monitor refund totals, inventory adjustments, and settlement backlog for 1 to 2 weeks
+    - step: expand access to additional authorized roles after pilot validation
+  feature_flags:
+    - return_management_enabled
+    - return_receipt_enabled
+    - refund_settlement_tracking_enabled
+  operational_checks:
+    - verify permission assignments for return creation, approval, and settlement actions
+    - verify stock reconciliation on restocked and damaged-return scenarios
+    - verify original transaction detail shows updated refunded amount and return status
+    - verify return receipts print and send without breaking existing sale receipt flow
+  rollback_plan:
+    - disable return-related feature flags immediately
+    - stop creating new returns while preserving historical return records
+    - revert frontend return entry points behind configuration
+    - reconcile inventory and refund settlement records created during the incident window before re-enable
+success_metrics:
+  functional:
+    - no return can exceed original sold quantities or refund more than the original paid amount for returned lines
+    - restocked quantities reconcile with inventory movement logs
+    - original transaction and return receipt totals stay consistent for audited samples
+  business:
+    - average supervisor handling time for partial returns
+    - count of return operations completed without manual back-office correction
+    - refund settlement backlog age for non-cash methods
+  quality:
+    - zero Sev-1 defects involving stock inflation or refund overpayment during pilot
+    - automated test pass rate maintained on backend and frontend suites
+agent_execution_hints:
+  defaults:
+    working_branch_naming: feat/FEAT-003-refunds-returns-management
+    commit_pattern: "feat(FEAT-003): <scope>"
+  implementation_order_guardrails:
+    - do not implement the frontend return workflow until backend preview and create endpoints are stable
+    - do not derive refund amounts from current catalog prices or current promotion rules; use persisted sale data only
+    - do not restock damaged or discarded returns into sellable inventory
+    - do not replace CancelTransaction with return logic; keep void and post-sale return workflows distinct
+  done_definition:
+    - authorized users can preview and finalize partial returns from completed transactions
+    - inventory disposition, refund settlement, and return receipts are persisted and queryable
+    - transaction history clearly exposes refunded totals and return status
+    - automated tests and staged rollout checklist are complete

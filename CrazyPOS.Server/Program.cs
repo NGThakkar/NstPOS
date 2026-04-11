@@ -1,6 +1,7 @@
 using CrazyPOS.Server.Auth;
 using CrazyPOS.Server.Models;
 using CrazyPOS.Server.Services;
+using CrazyPOS.Server.Services.InternalAgent;
 using CrazyPOS.Server.Services.Pricing;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ var securitySettings = builder.Configuration
     .Get<SecuritySettings>() ?? new SecuritySettings();
 
 builder.Services.Configure<SecuritySettings>(builder.Configuration.GetSection("Security"));
+builder.Services.Configure<InternalAgentSettings>(builder.Configuration.GetSection("InternalAgent"));
 
 // ----- CORS: restrict origins by environment -----
 builder.Services.AddCors(options =>
@@ -56,7 +58,14 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
 builder.Services.AddScoped<IRequestTokenService, RequestTokenService>();
+builder.Services.AddScoped<IReportingService, ReportingService>();
+builder.Services.AddScoped<IInternalCommandService, InternalCommandService>();
 builder.Services.AddSingleton<IPricingEngine, PricingEngine>();
+builder.Services.AddHttpClient("InternalAgentLlm", (serviceProvider, client) =>
+{
+    var settings = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<InternalAgentSettings>>().Value;
+    client.BaseAddress = new Uri(settings.BaseUrl);
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

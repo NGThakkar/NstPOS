@@ -1,0 +1,201 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Start a New Sale with Cart and Payment user manual">
+  <title>Start a New Sale with Cart and Payment | CrazyPOS Docs</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Start a New Sale with Cart and Payment</h1>
+      <p class="subtitle"><a href="../index.html">Home</a> &gt; Task Manuals &gt; Start a New Sale with Cart and Payment</p>
+    </div>
+  </header>
+  <main class="container">
+    <section class="manual-meta" aria-label="Manual metadata">
+      <div class="meta-item"><strong>Client:</strong> YOUR_CLIENT_NAME</div>
+      <div class="meta-item"><strong>User Role:</strong> Cashier</div>
+      <div class="meta-item"><strong>Difficulty Level:</strong> Intermediate</div>
+      <div class="meta-item"><strong>Estimated Time:</strong> 3-7 minutes</div>
+      <div class="meta-item"><strong>Last Updated:</strong> April 4, 2026</div>
+    </section>
+    <article class="card">
+<h2 id="1-overview">1. Overview</h2>
+<h3>What is this task?</h3>
+<p>This task explains how a Cashier starts a new sale in CrazyPOS, adds items to the cart, confirms totals, and completes payment. It is the core checkout workflow used for day-to-day customer transactions. Following these steps ensures sales are processed accurately and consistently.</p>
+<h3>When to use this task</h3>
+<p>Use this task whenever a customer is ready to purchase one or more items. It should be used for normal checkout flow after the cashier has logged in successfully.</p>
+<h3>Key benefits</h3>
+<ul class="steps">
+<li>Process customer purchases from cart to payment in one guided workflow.</li>
+<li>Reduce billing errors by validating items, quantities, and totals before charging.</li>
+<li>Capture transactions properly for reporting, receipts, and audit trails.</li>
+</ul>
+<h2 id="2-prerequisites">2. Prerequisites</h2>
+<p>Before you begin, ensure you have:</p>
+<ul class="steps">
+<li>[ ] Logged in using a valid Cashier account.</li>
+<li>[ ] Access to the POS sales screen with cart and payment controls.</li>
+<li>[ ] Products available in the system with valid prices.</li>
+<li>[ ] Customer payment method ready (cash, card, or configured payment mode).</li>
+<li>[ ] Printer configured if receipt printing is required.</li>
+</ul>
+<h3>Required information to gather</h3>
+<ul class="steps">
+<li>Item barcode or product name for each item the customer is buying</li>
+<li>Quantity for each line item</li>
+<li>Payment amount/tender details (cash amount received or card confirmation)</li>
+</ul>
+<h2 id="3-step-by-step-instructions">3. Step-by-Step Instructions</h2>
+<h3>Step 1: Open a new sales session</h3>
+<p>Start from the main POS screen and create a fresh transaction.</p>
+<ol>
+<li>Navigate to the Sales or POS screen after login.</li>
+<li>Click New Sale (or use the default blank cart if it opens automatically).</li>
+<li>Confirm the cart is empty before adding items.</li>
+</ol>
+<blockquote><p><strong>Tip:</strong> If a previous cart is still visible, clear it first to avoid mixing transactions.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: POS main screen with New Sale action highlighted</div>
+<h3>Step 2: Add products to cart</h3>
+<p>Add all customer items and verify each line.</p>
+<ol>
+<li>Scan each item barcode, or search by product name and select it.</li>
+<li>Adjust quantity for any item where the customer buys more than one.</li>
+<li>Confirm item name, unit price, and line total are correct.</li>
+<li>Remove incorrect items from the cart if added by mistake.</li>
+</ol>
+<blockquote><p><strong>Important:</strong> Check for duplicate scans before moving to payment.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Cart with multiple items, quantity controls, and line totals</div>
+<h3>Step 3: Review totals and discounts</h3>
+<p>Validate the sale summary before charging the customer.</p>
+<ol>
+<li>Review subtotal, tax, discounts, and grand total.</li>
+<li>Apply eligible promotions according to store policy (if available in workflow).</li>
+<li>Confirm final payable amount with the customer.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Cart summary panel showing subtotal, tax, discount, and total</div>
+<h3>Step 4: Complete payment</h3>
+<p>Collect payment and finalize the transaction.</p>
+<ol>
+<li>Click Proceed to Payment or Pay.</li>
+<li>Select the payment method (for example, Cash or Card).</li>
+<li>Enter received amount (for cash) or complete card confirmation.</li>
+<li>Click Complete Payment / Confirm.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Payment modal with method selection and amount fields</div>
+<h3>Step 5: Confirm transaction completion</h3>
+<p>Ensure the sale is recorded and ready for receipt handling.</p>
+<ol>
+<li>Verify success message appears (for example, &quot;Payment completed&quot;).</li>
+<li>Confirm a transaction ID/order number is generated.</li>
+<li>Print or preview receipt if required.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Payment success message with transaction ID and receipt options</div>
+<h2 id="4-expected-outcomes">4. Expected Outcomes</h2>
+<p>After completing this task, you should see:</p>
+<ul class="steps">
+<li>[ ] The transaction is saved successfully in the system.</li>
+<li>[ ] A transaction ID/order reference is displayed.</li>
+<li>[ ] Cart is cleared or reset for the next customer.</li>
+<li>[ ] Receipt option is available (print or reprint, based on setup).</li>
+</ul>
+<h3>Success indicators</h3>
+<ul class="steps">
+<li>Payment status is marked as completed/paid.</li>
+<li>The completed sale appears in transaction records.</li>
+</ul>
+<h2 id="5-troubleshooting-faq">5. Troubleshooting &amp; FAQ</h2>
+<h3>Q: An item does not appear when scanned.</h3>
+<p><strong>A:</strong> The barcode may not be mapped or the item may be inactive.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Product search/scan area with no match result</div>
+<h3>Q: The total amount looks incorrect.</h3>
+<p><strong>A:</strong> Quantity, item selection, or pricing/promotion rules may be causing a mismatch.</p>
+<p><strong>Steps to resolve:</strong></p>
+<ol>
+<li>Recheck each line item&#39;s quantity and price.</li>
+<li>Remove and re-add suspicious line items.</li>
+<li>Reapply discounts/promotions and review totals again.</li>
+</ol>
+<h3>Q: Payment fails or does not complete.</h3>
+<p><strong>A:</strong> This can happen due to invalid amount input, device issues, or temporary server/network problems.</p>
+<blockquote><p><strong>Note:</strong> Retry once after validating payment details, then escalate if still failing.</p></blockquote>
+<h3>Common errors</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Error</th>
+<th>Cause</th>
+<th>Solution</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Product not found</td>
+<td>Barcode not registered or wrong code scanned</td>
+<td>Search by name; verify barcode mapping with admin</td>
+</tr>
+<tr>
+<td>Amount tendered is less than total</td>
+<td>Received amount entered incorrectly</td>
+<td>Enter correct tender amount and retry</td>
+</tr>
+<tr>
+<td>Could not save transaction</td>
+<td>Temporary server/network issue</td>
+<td>Check connection, retry payment once, contact support if repeated</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-related-tasks">6. Related Tasks</h2>
+<ul class="steps">
+<li><strong>Apply Server-Side Promotions During Checkout</strong> - Use this when discounts are validated by backend rules before final payment.</li>
+<li><strong>Generate and Print a Receipt</strong> - Use this after payment to provide customer proof of purchase.</li>
+<li><strong>Search and Review Transaction History</strong> - Use this to find completed sales, verify details, or support returns/reconciliation.</li>
+</ul>
+<h2 id="7-additional-notes-tips">7. Additional Notes &amp; Tips</h2>
+<h3>Best practices</h3>
+<ul class="steps">
+<li>Confirm totals aloud with the customer before tapping Complete Payment.</li>
+<li>Keep scanner and payment devices connected and tested before peak hours.</li>
+<li>Process one customer at a time per terminal to avoid cart confusion.</li>
+</ul>
+<h3>Common pitfalls to avoid</h3>
+<ul class="steps">
+<li>Completing payment without reviewing quantity changes.</li>
+<li>Applying manual adjustments without supervisor approval.</li>
+</ul>
+<h3>Keyboard shortcuts (if applicable)</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>Tab</code></td>
+<td>Move to the next field in product/payment forms</td>
+</tr>
+<tr>
+<td><code>Enter</code></td>
+<td>Confirm selection or submit payment (where enabled)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="need-help">Need help?</h2>
+<p><strong>Contact Support:</strong></p>
+<ul class="steps">
+<li>Email: support@your-client-domain.com</li>
+<li>Phone: +1-000-000-0000</li>
+<li>Help Desk Hours: Monday-Friday, 8:00 AM-6:00 PM</li>
+<li>Knowledge Base: https://your-client-support.local</li>
+</ul>
+<p><strong>Document Version:</strong> 1.0</p>
+<p><strong>Author:</strong> CrazyPOS Documentation Team</p>
+<p><strong>Next Review Date:</strong> July 4, 2026</p>
+    </article>
+  </main>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+docs\manuals\Manager\Record-Manual-Inventory-Movements-YOUR_CLIENT_NAME-Manager.md
+docs\manuals\Manager\Request-Manager-Approval-for-Restricted-Discounts-YOUR_CLIENT_NAME-Manager.md
+docs\manuals\Manager\Review-Low-Stock-Items-and-Inventory-Stats-YOUR_CLIENT_NAME-Manager.md
+docs\manuals\Manager\Search-and-Review-Transaction-History-YOUR_CLIENT_NAME-Manager.md
+docs\manuals\Manager\Settle-Pending-Refunds-for-Returns-YOUR_CLIENT_NAME-Manager.md
+docs\modules\crazypos.client.md
+docs\modules\CrazyPOS.Server.md
+docs\site\INVENTORY.md

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Search, Calendar, Eye, Receipt, Download, Filter, X } from 'lucide-react';
+import { Search, Calendar, Eye, Receipt, Download, Filter, X, RefreshCw } from 'lucide-react';
 import { getTransactionDetails } from '../utils/storage';
+import { getReturnStatusBadgeClass, formatReturnStatus } from '../utils/returns';
+import { ReturnModal } from './ReturnModal';
 import * as XLSX from 'xlsx';
 
 export const TransactionHistory = ({ transactions, initialFilters = null }) => {
@@ -11,54 +13,50 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [showFilters, setShowFilters] = useState(initialFilters ? true : false);
+    const [showReturnModal, setShowReturnModal] = useState(false);
+    const [transactionForReturn, setTransactionForReturn] = useState(null);
     const [isExporting, setIsExporting] = useState(false);
 
-    // Get unique customers from transactions
     const getUniqueCustomers = () => {
         const customers = new Set();
-        transactions.forEach(transaction => {
+        transactions.forEach((transaction) => {
             const customerName = transaction.customerName || transaction.customer || 'Walk-in Customer';
             customers.add(customerName);
         });
         return Array.from(customers).sort();
     };
 
-    const filteredTransactions = transactions.filter(transaction => {
-        // Handle both database and localStorage formats
-        const transId = transaction.transactionCode || transaction.id || '';
-        const transDate = transaction.transactionDate || transaction.timestamp;
-        const cashier = transaction.cashier || transaction.cashierName || '';
-        const customerName = transaction.customerName || transaction.customer || 'Walk-in Customer';
+    const filteredTransactions = transactions
+        .filter((transaction) => {
+            const transId = transaction.transactionCode || transaction.id || '';
+            const transDate = transaction.transactionDate || transaction.timestamp;
+            const cashier = transaction.cashier || transaction.cashierName || '';
+            const customerName = transaction.customerName || transaction.customer || 'Walk-in Customer';
 
-        // Search filter (transaction ID or cashier)
-        const matchesSearch = transId.includes(searchTerm) ||
-            cashier.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSearch = transId.includes(searchTerm) ||
+                cashier.toLowerCase().includes(searchTerm.toLowerCase());
 
-        // From Date filter
-        const matchesFromDate = !fromDate ||
-            new Date(transDate) >= new Date(fromDate);
+            const matchesFromDate = !fromDate ||
+                new Date(transDate) >= new Date(fromDate);
 
-        // To Date filter
-        const matchesToDate = !toDate ||
-            new Date(transDate) <= new Date(new Date(toDate).getTime() + 24 * 60 * 60 * 1000); // Include entire day
+            const matchesToDate = !toDate ||
+                new Date(transDate) <= new Date(new Date(toDate).getTime() + 24 * 60 * 60 * 1000);
 
-        // Customer filter
-        const matchesCustomer = !selectedCustomer ||
-            customerName === selectedCustomer;
+            const matchesCustomer = !selectedCustomer ||
+                customerName === selectedCustomer;
 
-        return matchesSearch && matchesFromDate && matchesToDate && matchesCustomer;
-    }).sort((a, b) => {
-        const dateA = new Date(a.transactionDate || a.timestamp);
-        const dateB = new Date(b.transactionDate || b.timestamp);
-        return dateB.getTime() - dateA.getTime();
-    });
+            return matchesSearch && matchesFromDate && matchesToDate && matchesCustomer;
+        })
+        .sort((a, b) => {
+            const dateA = new Date(a.transactionDate || a.timestamp);
+            const dateB = new Date(b.transactionDate || b.timestamp);
+            return dateB.getTime() - dateA.getTime();
+        });
 
     const totalSales = filteredTransactions.reduce((sum, t) => sum + (t.totalAmount || t.total || 0), 0);
     const totalTax = filteredTransactions.reduce((sum, t) => sum + (t.taxAmount || t.tax || 0), 0);
 
-    // Handle viewing transaction details
     const handleViewDetails = async (transaction) => {
-        // If it's a database transaction, fetch full details from API
         if (transaction.transactionId) {
             setLoadingDetails(true);
             try {
@@ -66,15 +64,32 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                 setSelectedTransaction(fullDetails);
             } catch (error) {
                 console.error('Error loading transaction details:', error);
-                // Fallback to the basic transaction data
                 setSelectedTransaction(transaction);
             } finally {
                 setLoadingDetails(false);
             }
         } else {
-            // For localStorage transactions, use as-is
             setSelectedTransaction(transaction);
         }
+    };
+
+    const handleProcessReturn = async (transaction) => {
+        if (transaction.transactionId) {
+            setLoadingDetails(true);
+            try {
+                const fullDetails = await getTransactionDetails(transaction.transactionId);
+                setTransactionForReturn(fullDetails);
+            } catch (error) {
+                console.error('Error loading transaction for return:', error);
+                setTransactionForReturn(transaction);
+            } finally {
+                setLoadingDetails(false);
+            }
+        } else {
+            setTransactionForReturn(transaction);
+        }
+
+        setShowReturnModal(true);
     };
 
     const resetFilters = () => {
@@ -86,14 +101,11 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
 
     const hasActiveFilters = searchTerm || fromDate || toDate || selectedCustomer;
 
-    // Export to Excel
     const handleExportToExcel = () => {
         try {
             setIsExporting(true);
-            console.log('Exporting transactions to Excel...');
 
-            // Prepare data for Excel
-            const excelData = filteredTransactions.map(transaction => {
+            const excelData = filteredTransactions.map((transaction) => {
                 const transCode = transaction.transactionCode || (transaction.id && transaction.id.slice(-8)) || 'Unknown';
                 const transDate = transaction.transactionDate || transaction.timestamp;
                 const itemCount = transaction.itemCount || (transaction.items ? transaction.items.length : 0);
@@ -101,10 +113,7 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                 const totalAmount = transaction.totalAmount || transaction.total || 0;
                 const customerName = transaction.customerName || transaction.customer || 'Walk-in Customer';
 
-                // Try multiple fields for cashier name
                 let cashier = transaction.cashier || transaction.cashierName || transaction.user?.fullName || 'Unknown';
-
-                // If cashier is a notes field from localStorage, extract it
                 if (cashier && cashier.toLowerCase().startsWith('cashier:')) {
                     cashier = cashier.replace(/^cashier:\s*/i, '').trim();
                 }
@@ -122,16 +131,14 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                     'Tax': taxAmount.toFixed(2),
                     'Discount': discountAmount.toFixed(2),
                     'Total': totalAmount.toFixed(2),
-                    'Payment Method': paymentMethod
+                    'Payment Method': paymentMethod,
                 };
             });
 
-            // Create a new workbook
             const ws = XLSX.utils.json_to_sheet(excelData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Transactions');
 
-            // Add summary section
             const summaryData = [
                 ['TRANSACTION SUMMARY'],
                 [''],
@@ -150,22 +157,19 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
             const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
             XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
-            // Set column widths
-            const columnWidths = [
-                { wch: 18 }, // Transaction ID
-                { wch: 25 }, // Date & Time
-                { wch: 20 }, // Customer
-                { wch: 15 }, // Cashier
-                { wch: 8 },  // Items
-                { wch: 12 }, // Subtotal
-                { wch: 12 }, // Tax
-                { wch: 12 }, // Discount
-                { wch: 12 }, // Total
-                { wch: 15 }  // Payment Method
+            ws['!cols'] = [
+                { wch: 18 },
+                { wch: 25 },
+                { wch: 20 },
+                { wch: 15 },
+                { wch: 8 },
+                { wch: 12 },
+                { wch: 12 },
+                { wch: 12 },
+                { wch: 12 },
+                { wch: 15 },
             ];
-            ws['!cols'] = columnWidths;
 
-            // Generate filename with date and filter info
             let filename = 'Transactions';
             if (fromDate && toDate) {
                 filename += `_${fromDate}_to_${toDate}`;
@@ -176,15 +180,12 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
             }
             filename += `_${new Date().toISOString().split('T')[0]}.xlsx`;
 
-            // Write the file
             XLSX.writeFile(wb, filename);
-
-            console.log(`Successfully exported ${filteredTransactions.length} transactions to ${filename}`);
             alert(`Successfully exported ${filteredTransactions.length} transactions to ${filename}`);
-            setIsExporting(false);
         } catch (error) {
             console.error('Error exporting to Excel:', error);
             alert(`Failed to export: ${error.message}`);
+        } finally {
             setIsExporting(false);
         }
     };
@@ -196,9 +197,7 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                 <p className="text-gray-600">View and manage all sales transactions</p>
             </div>
 
-            {/* Filters */}
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 space-y-4">
-                {/* Main Filter Row */}
                 <div className="flex flex-col sm:flex-row gap-4 items-end">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -235,14 +234,10 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                     </button>
                 </div>
 
-                {/* Advanced Filters Panel */}
                 {showFilters && (
                     <div className="pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {/* From Date Filter */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                From Date
-                            </label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">From Date</label>
                             <div className="relative">
                                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                                 <input
@@ -254,11 +249,8 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                             </div>
                         </div>
 
-                        {/* To Date Filter */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                To Date
-                            </label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">To Date</label>
                             <div className="relative">
                                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                                 <input
@@ -270,18 +262,15 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                             </div>
                         </div>
 
-                        {/* Customer Filter */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Customer
-                            </label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Customer</label>
                             <select
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 value={selectedCustomer}
                                 onChange={(e) => setSelectedCustomer(e.target.value)}
                             >
                                 <option value="">All Customers</option>
-                                {getUniqueCustomers().map(customer => (
+                                {getUniqueCustomers().map((customer) => (
                                     <option key={customer} value={customer}>
                                         {customer}
                                     </option>
@@ -289,7 +278,6 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                             </select>
                         </div>
 
-                        {/* Reset Filters Button */}
                         <div className="flex items-end">
                             <button
                                 onClick={resetFilters}
@@ -303,7 +291,6 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                     </div>
                 )}
 
-                {/* Summary Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
                     <div className="bg-gray-50 rounded-lg p-3">
                         <p className="text-sm text-gray-600">Total Transactions</p>
@@ -320,38 +307,23 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                 </div>
             </div>
 
-            {/* Transactions Table */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Transaction ID
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Date & Time
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Customer
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Items
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Payment Method
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Total
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {filteredTransactions.map(transaction => {
-                                // Handle both database and localStorage formats
+                            {filteredTransactions.map((transaction) => {
                                 const transId = transaction.transactionId || transaction.id || 'N/A';
                                 const transCode = transaction.transactionCode || (transaction.id && transaction.id.slice(-8)) || 'Unknown';
                                 const transDate = transaction.transactionDate || transaction.timestamp;
@@ -359,34 +331,25 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                                 const paymentMethod = transaction.paymentMethod || 'Unknown';
                                 const totalAmount = transaction.totalAmount || transaction.total || 0;
                                 const customerName = transaction.customerName || transaction.customer || 'Walk-in Customer';
+                                const returnStatus = transaction.returnStatus || 'none';
 
-                                // Try multiple fields for cashier name
                                 let cashier = transaction.cashier || transaction.cashierName || transaction.user?.fullName || 'Unknown';
-
-                                // If cashier is a notes field from localStorage, extract it
                                 if (cashier && cashier.toLowerCase().startsWith('cashier:')) {
                                     cashier = cashier.replace(/^cashier:\s*/i, '').trim();
                                 }
 
                                 return (
                                     <tr key={transId} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            #{transCode}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {new Date(transDate).toLocaleString()}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {customerName}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {itemCount} item{itemCount !== 1 ? 's' : ''}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {paymentMethod}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                            ${totalAmount.toFixed(2)}
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{transCode}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(transDate).toLocaleString()}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customerName}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{itemCount} item{itemCount !== 1 ? 's' : ''}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paymentMethod}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">${totalAmount.toFixed(2)}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white badge ${getReturnStatusBadgeClass(returnStatus)}`}>
+                                                {formatReturnStatus(returnStatus)}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             <div className="flex items-center space-x-2">
@@ -397,6 +360,14 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                                                     title={`View details - Cashier: ${cashier}`}
                                                 >
                                                     <Eye className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleProcessReturn(transaction)}
+                                                    disabled={loadingDetails}
+                                                    className="text-purple-600 hover:text-purple-800 transition-colors disabled:opacity-50"
+                                                    title="Process return"
+                                                >
+                                                    <RefreshCw className="w-4 h-4" />
                                                 </button>
                                                 <button className="text-green-600 hover:text-green-800 transition-colors">
                                                     <Receipt className="w-4 h-4" />
@@ -419,14 +390,11 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                 )}
             </div>
 
-            {/* Transaction Detail Modal */}
             {selectedTransaction && (
                 <div className="fixed inset-0 bg-gray-500/60 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                                Transaction Details
-                            </h3>
+                            <h3 className="text-lg font-semibold text-gray-900">Transaction Details</h3>
                             <button
                                 onClick={() => setSelectedTransaction(null)}
                                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -509,6 +477,18 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                     </div>
                 </div>
             )}
+
+            <ReturnModal
+                isOpen={showReturnModal}
+                onClose={() => {
+                    setShowReturnModal(false);
+                    setTransactionForReturn(null);
+                }}
+                transaction={transactionForReturn}
+                onReturnComplete={(result) => {
+                    console.log('Return completed:', result);
+                }}
+            />
         </div>
     );
 };

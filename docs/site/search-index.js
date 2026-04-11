@@ -1,0 +1,501 @@
+﻿window.__MANUAL_INDEX__ = {
+    "generatedOn":  "2026-04-04T12:29:22+05:30",
+    "total":  26,
+    "pages":  [
+                  {
+                      "title":  "Activate or Deactivate Promotions",
+                      "url":  "pages/Activate-or-Deactivate-Promotions-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Beginner",
+                      "estimatedTime":  "1-3 minutes",
+                      "excerpt":  "This task explains how managers enable or disable existing promotions without editing their full setup. Activation controls when offers are live at checkout, while deacti...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Add and Update Product Catalog Items",
+                      "url":  "pages/Add-and-Update-Product-Catalog-Items-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "5-12 minutes",
+                      "excerpt":  "This task helps Manager users create new products and maintain existing product details in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and e...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Adjust Customer Loyalty Points",
+                      "url":  "pages/Adjust-Customer-Loyalty-Points-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "2-4 minutes",
+                      "excerpt":  "This task explains how managers can manually increase or decrease customer loyalty points based on approved business rules. Point adjustments may be needed for service re...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Apply Server-Side Promotions During Checkout",
+                      "url":  "pages/Apply-Server-Side-Promotions-During-Checkout-YOUR_CLIENT_NAME-Cashier.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Cashier",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "2-4 minutes",
+                      "excerpt":  "This task explains how a Cashier applies backend-validated promotions while processing a sale in CrazyPOS. Promotions are calculated on the server to ensure policy compli...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Cancel a Completed Transaction",
+                      "url":  "pages/Cancel-a-Completed-Transaction-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "2-5 minutes",
+                      "excerpt":  "This task helps Manager users void a completed sale under approved policy in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and easy to audit.",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Change User Roles and Access",
+                      "url":  "pages/Change-User-Roles-and-Access-YOUR_CLIENT_NAME-Admin.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Admin",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "2-5 minutes",
+                      "excerpt":  "This task helps Admin users modify user role and permission scope in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and easy to audit.",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Create and Edit Promotions",
+                      "url":  "pages/Create-and-Edit-Promotions-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Advanced",
+                      "estimatedTime":  "8-20 minutes",
+                      "excerpt":  "This task explains how managers define, configure, and update promotion rules in CrazyPOS. Promotions can include date windows, eligibility conditions, and discount logic...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Create and Maintain Customer Records",
+                      "url":  "pages/Create-and-Maintain-Customer-Records-YOUR_CLIENT_NAME-Cashier.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Cashier",
+                      "difficulty":  "Beginner",
+                      "estimatedTime":  "3-8 minutes",
+                      "excerpt":  "This task explains how to register new customers and update existing customer profiles in CrazyPOS. Accurate customer records improve checkout speed, loyalty tracking, an...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Create and Maintain User Accounts",
+                      "url":  "pages/Create-and-Maintain-User-Accounts-YOUR_CLIENT_NAME-Admin.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Admin",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "5-12 minutes",
+                      "excerpt":  "This task helps Admin users create, update, and maintain staff user accounts securely in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and eas...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Create a Sales Return",
+                      "url":  "pages/Create-a-Sales-Return-YOUR_CLIENT_NAME-Cashier.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Cashier",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "4-8 minutes",
+                      "excerpt":  "This task helps Cashier users submit a validated sales return for accepted items in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and easy to...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Deactivate or Reactivate Users",
+                      "url":  "pages/Deactivate-or-Reactivate-Users-YOUR_CLIENT_NAME-Admin.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Admin",
+                      "difficulty":  "Beginner",
+                      "estimatedTime":  "1-3 minutes",
+                      "excerpt":  "This task helps Admin users toggle account status for workforce changes in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and easy to audit.",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Generate and Print a Receipt",
+                      "url":  "pages/Generate-and-Print-a-Receipt-YOUR_CLIENT_NAME-Cashier.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Cashier",
+                      "difficulty":  "Beginner",
+                      "estimatedTime":  "1-3 minutes",
+                      "excerpt":  "This task explains how to generate and print a customer receipt after successful payment in CrazyPOS. It ensures customers receive proof of purchase and enables easier re...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Generate Daily Sales Report",
+                      "url":  "pages/Generate-Daily-Sales-Report-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Beginner",
+                      "estimatedTime":  "2-5 minutes",
+                      "excerpt":  "This task explains how to generate the end-of-day sales report for managerial review and reconciliation. The report summarizes revenue, payment mix, refunds, and transact...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Log In to CrazyPOS",
+                      "url":  "pages/Log-In-to-CrazyPOS-YOUR_CLIENT_NAME-Cashier.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Cashier",
+                      "difficulty":  "Beginner",
+                      "estimatedTime":  "2 minutes",
+                      "excerpt":  "This task explains how a Cashier can sign in to CrazyPOS at the start of a shift. Logging in gives access to sales features, cart actions, and payment processing. It also...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Manage Product Categories",
+                      "url":  "pages/Manage-Product-Categories-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Beginner",
+                      "estimatedTime":  "3-6 minutes",
+                      "excerpt":  "This task helps Manager users create, rename, and organize product categories in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and easy to aud...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Monitor and Adjust Inventory",
+                      "url":  "pages/Monitor-and-Adjust-Inventory-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "5-15 minutes",
+                      "excerpt":  "This task helps Manager users track stock levels and perform controlled quantity adjustments in CrazyPOS. It is structured to keep operations consistent, policy-aligned,...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Place an Order on Hold and Resume It Later",
+                      "url":  "pages/Place-an-Order-on-Hold-and-Resume-It-Later-YOUR_CLIENT_NAME-Cashier.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Cashier",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "2-5 minutes",
+                      "excerpt":  "This task explains how a cashier can park an in-progress cart as an on-hold order and resume it later without re-scanning items. It is used to handle interruptions such a...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Preview a Sales Return Before Submission",
+                      "url":  "pages/Preview-a-Sales-Return-Before-Submission-YOUR_CLIENT_NAME-Cashier.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Cashier",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "2-4 minutes",
+                      "excerpt":  "This task helps Cashier users review return lines, quantities, and refund totals before final submission in CrazyPOS. It is structured to keep operations consistent, poli...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Record Manual Inventory Movements",
+                      "url":  "pages/Record-Manual-Inventory-Movements-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "2-6 minutes",
+                      "excerpt":  "This task helps Manager users record non-sale inventory movements such as damage, transfer, or correction in CrazyPOS. It is structured to keep operations consistent, pol...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Request Manager Approval for Restricted Discounts",
+                      "url":  "pages/Request-Manager-Approval-for-Restricted-Discounts-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "1-3 minutes",
+                      "excerpt":  "This task explains how a Manager reviews and approves restricted discount requests during checkout in CrazyPOS. Restricted discounts are controlled by policy and require...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Review Audit Logs",
+                      "url":  "pages/Review-Audit-Logs-YOUR_CLIENT_NAME-Admin.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Admin",
+                      "difficulty":  "Beginner",
+                      "estimatedTime":  "3-8 minutes",
+                      "excerpt":  "This task helps Admin users inspect system activity records for security and compliance in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and e...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Review Low-Stock Items and Inventory Stats",
+                      "url":  "pages/Review-Low-Stock-Items-and-Inventory-Stats-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Beginner",
+                      "estimatedTime":  "2-5 minutes",
+                      "excerpt":  "This task helps Manager users review low-stock alerts and stock performance metrics in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and easy...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Search and Review Transaction History",
+                      "url":  "pages/Search-and-Review-Transaction-History-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Beginner",
+                      "estimatedTime":  "3-10 minutes",
+                      "excerpt":  "This task explains how managers can locate and inspect completed transactions to verify sales activity, investigate issues, and support controls. It provides visibility i...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Search Customer Purchase History",
+                      "url":  "pages/Search-Customer-Purchase-History-YOUR_CLIENT_NAME-Cashier.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Cashier",
+                      "difficulty":  "Beginner",
+                      "estimatedTime":  "2-5 minutes",
+                      "excerpt":  "This task explains how to find and review a customer\u0026#39;s previous purchases in CrazyPOS. Cashiers use purchase history to answer customer questions, validate prior tran...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Settle Pending Refunds for Returns",
+                      "url":  "pages/Settle-Pending-Refunds-for-Returns-YOUR_CLIENT_NAME-Manager.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Manager",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "2-5 minutes",
+                      "excerpt":  "This task helps Manager users approve and settle pending return refunds in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and easy to audit.",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  },
+                  {
+                      "title":  "Start a New Sale with Cart and Payment",
+                      "url":  "pages/Start-a-New-Sale-with-Cart-and-Payment-YOUR_CLIENT_NAME-Cashier.html",
+                      "client":  "YOUR_CLIENT_NAME",
+                      "role":  "Cashier",
+                      "difficulty":  "Intermediate",
+                      "estimatedTime":  "3-7 minutes",
+                      "excerpt":  "This task explains how a Cashier starts a new sale in CrazyPOS, adds items to the cart, confirms totals, and completes payment. It is the core checkout workflow used for...",
+                      "keywords":  [
+                                       "1. Overview",
+                                       "2. Prerequisites",
+                                       "3. Step-by-Step Instructions",
+                                       "4. Expected Outcomes",
+                                       "5. Troubleshooting \u0026amp; FAQ",
+                                       "6. Related Tasks",
+                                       "7. Additional Notes \u0026amp; Tips",
+                                       "Need help?"
+                                   ]
+                  }
+              ]
+}
+;

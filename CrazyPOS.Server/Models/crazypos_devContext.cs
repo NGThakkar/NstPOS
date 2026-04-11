@@ -41,6 +41,12 @@ public partial class crazypos_devContext : DbContext
 
     public virtual DbSet<TransactionItem> TransactionItems { get; set; }
 
+    public virtual DbSet<SalesReturn> SalesReturns { get; set; }
+
+    public virtual DbSet<ReturnItem> ReturnItems { get; set; }
+
+    public virtual DbSet<RefundSettlement> RefundSettlements { get; set; }
+
     public virtual DbSet<PaymentMethod> PaymentMethods { get; set; }
 
     public virtual DbSet<BarcodeMapping> BarcodeMappings { get; set; }
@@ -508,6 +514,15 @@ public partial class crazypos_devContext : DbContext
             entity.Property(e => e.DiscountAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("discount_amount");
+            entity.Property(e => e.RefundedAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasDefaultValue(0)
+                .HasColumnName("refunded_amount");
+            entity.Property(e => e.ReturnStatus)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasDefaultValue("none")
+                .HasColumnName("return_status");
             entity.Property(e => e.Notes).HasColumnName("notes");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
@@ -543,6 +558,9 @@ public partial class crazypos_devContext : DbContext
             entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
             entity.Property(e => e.Productid).HasColumnName("productid");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
+            entity.Property(e => e.ReturnedQuantity)
+                .HasDefaultValue(0)
+                .HasColumnName("returned_quantity");
             entity.Property(e => e.UnitPrice)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("unit_price");
@@ -579,6 +597,187 @@ public partial class crazypos_devContext : DbContext
             entity.HasOne(d => d.Promotion).WithMany()
                 .HasForeignKey(d => d.PromotionId)
                 .HasConstraintName("FK_transaction_items_promotions");
+        });
+
+        modelBuilder.Entity<SalesReturn>(entity =>
+        {
+            entity.ToTable("sales_returns");
+
+            entity.HasKey(e => e.ReturnId).HasName("PK_sales_returns");
+
+            entity.HasIndex(e => e.ReturnCode, "IX_sales_returns_return_code").IsUnique();
+            entity.HasIndex(e => e.OriginalTransactionId, "IX_sales_returns_original_transaction_id");
+
+            entity.Property(e => e.ReturnId).HasColumnName("return_id");
+            entity.Property(e => e.ReturnCode)
+                .IsRequired()
+                .HasMaxLength(40)
+                .HasColumnName("return_code");
+            entity.Property(e => e.OriginalTransactionId).HasColumnName("original_transaction_id");
+            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
+            entity.Property(e => e.ProcessedByUserId).HasColumnName("processed_by_user_id");
+            entity.Property(e => e.ApprovedByUserId).HasColumnName("approved_by_user_id");
+            entity.Property(e => e.ReturnDate)
+                .HasColumnType("datetime2")
+                .HasColumnName("return_date");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasMaxLength(30)
+                .HasColumnName("status");
+            entity.Property(e => e.RefundStatus)
+                .IsRequired()
+                .HasMaxLength(30)
+                .HasColumnName("refund_status");
+            entity.Property(e => e.ReasonCode)
+                .IsRequired()
+                .HasMaxLength(40)
+                .HasColumnName("reason_code");
+            entity.Property(e => e.ReasonNotes)
+                .HasMaxLength(500)
+                .HasColumnName("reason_notes");
+            entity.Property(e => e.SubtotalReversal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("subtotal_reversal");
+            entity.Property(e => e.TaxReversal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("tax_reversal");
+            entity.Property(e => e.DiscountReversal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("discount_reversal");
+            entity.Property(e => e.RefundTotal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("refund_total");
+            entity.Property(e => e.Notes)
+                .HasMaxLength(500)
+                .HasColumnName("notes");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime2")
+                .HasColumnName("updated_at");
+
+            entity.HasOne(d => d.OriginalTransaction)
+                .WithMany(p => p.SalesReturns)
+                .HasForeignKey(d => d.OriginalTransactionId)
+                .HasConstraintName("FK_sales_returns_sales_transactions");
+
+            entity.HasOne(d => d.Customer)
+                .WithMany()
+                .HasForeignKey(d => d.CustomerId)
+                .HasConstraintName("FK_sales_returns_customers");
+
+            entity.HasOne(d => d.ProcessedByUser)
+                .WithMany()
+                .HasForeignKey(d => d.ProcessedByUserId)
+                .HasConstraintName("FK_sales_returns_processed_by_users");
+
+            entity.HasOne(d => d.ApprovedByUser)
+                .WithMany()
+                .HasForeignKey(d => d.ApprovedByUserId)
+                .HasConstraintName("FK_sales_returns_approved_by_users");
+        });
+
+        modelBuilder.Entity<ReturnItem>(entity =>
+        {
+            entity.ToTable("return_items");
+
+            entity.HasKey(e => e.ReturnItemId).HasName("PK_return_items");
+
+            entity.HasIndex(e => e.ReturnId, "IX_return_items_return_id");
+            entity.HasIndex(e => e.OriginalTransactionItemId, "IX_return_items_original_transaction_item_id");
+
+            entity.Property(e => e.ReturnItemId).HasColumnName("return_item_id");
+            entity.Property(e => e.ReturnId).HasColumnName("return_id");
+            entity.Property(e => e.OriginalTransactionItemId).HasColumnName("original_transaction_item_id");
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.Quantity).HasColumnName("quantity");
+            entity.Property(e => e.UnitPrice)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("unit_price");
+            entity.Property(e => e.DiscountReversal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("discount_reversal");
+            entity.Property(e => e.TaxReversal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("tax_reversal");
+            entity.Property(e => e.RefundLineTotal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("refund_line_total");
+            entity.Property(e => e.InventoryDisposition)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasColumnName("inventory_disposition");
+            entity.Property(e => e.DispositionNotes)
+                .HasMaxLength(300)
+                .HasColumnName("disposition_notes");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnName("created_at");
+
+            entity.HasOne(d => d.SalesReturn)
+                .WithMany(p => p.ReturnItems)
+                .HasForeignKey(d => d.ReturnId)
+                .HasConstraintName("FK_return_items_sales_returns");
+
+            entity.HasOne(d => d.OriginalTransactionItem)
+                .WithMany(p => p.ReturnItems)
+                .HasForeignKey(d => d.OriginalTransactionItemId)
+                .HasConstraintName("FK_return_items_transaction_items");
+
+            entity.HasOne(d => d.Product)
+                .WithMany()
+                .HasForeignKey(d => d.ProductId)
+                .HasConstraintName("FK_return_items_products");
+        });
+
+        modelBuilder.Entity<RefundSettlement>(entity =>
+        {
+            entity.ToTable("refund_settlements");
+
+            entity.HasKey(e => e.RefundSettlementId).HasName("PK_refund_settlements");
+
+            entity.HasIndex(e => e.ReturnId, "IX_refund_settlements_return_id");
+
+            entity.Property(e => e.RefundSettlementId).HasColumnName("refund_settlement_id");
+            entity.Property(e => e.ReturnId).HasColumnName("return_id");
+            entity.Property(e => e.RefundMethod)
+                .IsRequired()
+                .HasMaxLength(30)
+                .HasColumnName("refund_method");
+            entity.Property(e => e.Amount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("amount");
+            entity.Property(e => e.SettlementStatus)
+                .IsRequired()
+                .HasMaxLength(30)
+                .HasColumnName("settlement_status");
+            entity.Property(e => e.PaymentReference)
+                .HasMaxLength(120)
+                .HasColumnName("payment_reference");
+            entity.Property(e => e.ProcessedByUserId).HasColumnName("processed_by_user_id");
+            entity.Property(e => e.ProcessedAt)
+                .HasColumnType("datetime2")
+                .HasColumnName("processed_at");
+            entity.Property(e => e.Notes)
+                .HasMaxLength(500)
+                .HasColumnName("notes");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnName("created_at");
+
+            entity.HasOne(d => d.SalesReturn)
+                .WithMany(p => p.RefundSettlements)
+                .HasForeignKey(d => d.ReturnId)
+                .HasConstraintName("FK_refund_settlements_sales_returns");
+
+            entity.HasOne(d => d.ProcessedByUser)
+                .WithMany()
+                .HasForeignKey(d => d.ProcessedByUserId)
+                .HasConstraintName("FK_refund_settlements_users");
         });
 
         modelBuilder.Entity<TransactionPromotion>(entity =>

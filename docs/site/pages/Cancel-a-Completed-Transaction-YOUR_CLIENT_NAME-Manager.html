@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cancel a Completed Transaction user manual">
+  <title>Cancel a Completed Transaction | CrazyPOS Docs</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Cancel a Completed Transaction</h1>
+      <p class="subtitle"><a href="../index.html">Home</a> &gt; Task Manuals &gt; Cancel a Completed Transaction</p>
+    </div>
+  </header>
+  <main class="container">
+    <section class="manual-meta" aria-label="Manual metadata">
+      <div class="meta-item"><strong>Client:</strong> YOUR_CLIENT_NAME</div>
+      <div class="meta-item"><strong>User Role:</strong> Manager</div>
+      <div class="meta-item"><strong>Difficulty Level:</strong> Intermediate</div>
+      <div class="meta-item"><strong>Estimated Time:</strong> 2-5 minutes</div>
+      <div class="meta-item"><strong>Last Updated:</strong> April 4, 2026</div>
+    </section>
+    <article class="card">
+<h2 id="1-overview">1. Overview</h2>
+<h3>What is this task?</h3>
+<p>This task helps Manager users void a completed sale under approved policy in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and easy to audit.</p>
+<h3>When to use this task</h3>
+<p>Use this task when a completed transaction must be reversed due to error or compliance requirement.</p>
+<h3>Key benefits</h3>
+<ul class="steps">
+<li>Correct financial records quickly</li>
+<li>Prevent downstream reconciliation issues</li>
+<li>Maintain clear audit trail of reversals</li>
+</ul>
+<h2 id="2-prerequisites">2. Prerequisites</h2>
+<p>Before you begin, ensure you have:</p>
+<ul class="steps">
+<li>[ ] Manager cancel permission is enabled</li>
+<li>[ ] Target transaction can be identified</li>
+<li>[ ] Cancellation reason policy is available</li>
+<li>[ ] Accounting cutoff rules are checked</li>
+</ul>
+<h3>Required information to gather</h3>
+<ul class="steps">
+<li>Transaction ID</li>
+<li>Cancellation reason</li>
+<li>Customer/payment details if needed</li>
+</ul>
+<h2 id="3-step-by-step-instructions">3. Step-by-Step Instructions</h2>
+<h3>Step 1: Access the correct module</h3>
+<p>Open transaction history and access the completed transaction management view.</p>
+<ol>
+<li>Sign in with your Manager account.</li>
+<li>Open Sales History and find Completed Transactions.</li>
+<li>Confirm business date and terminal filter match the sale.</li>
+</ol>
+<blockquote><p><strong>Tip:</strong> Verify filters and context before editing any records.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Landing screen for Cancel a Completed Transaction</div>
+<h3>Step 2: Enter required details</h3>
+<p>Review eligibility and policy constraints</p>
+<ol>
+<li>Select the completed transaction targeted for cancellation.</li>
+<li>Open transaction details and check cancellation eligibility window.</li>
+<li>Enter mandatory cancellation reason.</li>
+</ol>
+<blockquote><p><strong>Important:</strong> Incorrect values can cause policy or reconciliation issues.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Data entry and selection fields for Cancel a Completed Transaction</div>
+<h3>Step 3: Validate the result</h3>
+<p>Execute cancel action with mandatory reason</p>
+<ol>
+<li>Review cancellation impact and reversal-status messages.</li>
+<li>Confirm payment reversal path (cash/card/digital) is valid.</li>
+<li>Resolve warning prompts before cancellation.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Validation panel with totals and status checks</div>
+<h3>Step 4: Submit and confirm</h3>
+<p>Verify status changes and audit entry is created</p>
+<ol>
+<li>Execute Cancel Transaction and confirm the prompt.</li>
+<li>Confirm status changes from Completed to Cancelled.</li>
+<li>Verify audit log entry includes manager identity and reason.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Success message with generated reference</div>
+<h2 id="4-expected-outcomes">4. Expected Outcomes</h2>
+<p>After completing this task, you should see:</p>
+<ul class="steps">
+<li>[ ] The workflow is saved successfully.</li>
+<li>[ ] Status reflects the final approved/submitted state.</li>
+<li>[ ] A reference ID or log entry is generated.</li>
+<li>[ ] The process is ready for related follow-up tasks.</li>
+</ul>
+<h3>Success indicators</h3>
+<ul class="steps">
+<li>No blocking validation or policy error remains.</li>
+<li>Record updates are visible in list/history views.</li>
+</ul>
+<h2 id="5-troubleshooting-faq">5. Troubleshooting &amp; FAQ</h2>
+<h3>Q: Cancel button is disabled</h3>
+<p><strong>A:</strong> Transaction may be outside cancellation window.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Relevant screen for Cancel button is disabled</div>
+<h3>Q: Payment already settled externally</h3>
+<p><strong>A:</strong> Follow payment provider reversal workflow.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Relevant screen for Payment already settled externally</div>
+<h3>Q: Status did not update</h3>
+<p><strong>A:</strong> Refresh history and verify backend response.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Relevant screen for Status did not update</div>
+<h3>Common errors</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Error</th>
+<th>Cause</th>
+<th>Solution</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Cancellation not allowed</td>
+<td>Window expired or permission missing</td>
+<td>Escalate per policy or use return workflow</td>
+</tr>
+<tr>
+<td>Reversal failed</td>
+<td>External payment rejection</td>
+<td>Retry with supported reversal method</td>
+</tr>
+<tr>
+<td>Record lock error</td>
+<td>Concurrent edit in progress</td>
+<td>Wait briefly and retry operation</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-related-tasks">6. Related Tasks</h2>
+<ul class="steps">
+<li><strong>Search and Review Transaction History</strong> - Related workflow reference for this task.</li>
+</ul>
+<h2 id="7-additional-notes-tips">7. Additional Notes &amp; Tips</h2>
+<h3>Best practices</h3>
+<ul class="steps">
+<li>Follow the same sequence every time.</li>
+<li>Confirm critical amounts and statuses before submit.</li>
+<li>Record concise, policy-based notes for audit clarity.</li>
+</ul>
+<h3>Common pitfalls to avoid</h3>
+<ul class="steps">
+<li>Submitting without final validation.</li>
+<li>Processing in the wrong branch/store context.</li>
+</ul>
+<h3>Keyboard shortcuts (if applicable)</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Tab</td>
+<td>Move to the next field</td>
+</tr>
+<tr>
+<td>Enter</td>
+<td>Confirm focused action where enabled</td>
+</tr>
+</tbody>
+</table>
+<h2 id="need-help">Need help?</h2>
+<p><strong>Contact Support:</strong></p>
+<ul class="steps">
+<li>Email: support@your-client-domain.com</li>
+<li>Phone: +1-000-000-0000</li>
+<li>Help Desk Hours: Monday-Friday, 8:00 AM-6:00 PM</li>
+<li>Knowledge Base: https://your-client-support.local</li>
+</ul>
+<p><strong>Document Version:</strong> 1.1</p>
+<p><strong>Author:</strong> CrazyPOS Documentation Team</p>
+<p><strong>Next Review Date:</strong> July 4, 2026</p>
+    </article>
+  </main>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+feature_id: FEAT-004
+title: Advanced Reporting and Analytics
+priority: P1
+status: in_progress
+source_documents:
+  - docs/roadmap.md
+summary:
+  purpose: Provide manager-facing analytics for sales trends, cashier performance, category and product performance, and payment mix.
+  business_outcomes:
+    - improve manager visibility for daily operations
+    - speed up decision-making with KPI and trend views
+    - standardize reporting APIs for dashboard and export workflows
+scope:
+  in_scope:
+    - reporting service layer and dedicated reporting controller
+    - daily and hourly sales trend endpoints
+    - cashier, category, product, and payment-method performance endpoints
+    - top-performer endpoint for dashboard widgets
+    - date-range validation, pagination, and query guardrails
+    - starter reporting summary SQL artifact for FEAT-004 schema track
+  out_of_scope:
+    - scheduled report emails
+    - PDF report rendering
+    - external BI connectors
+technical_decisions:
+  - use dedicated ReportingController instead of extending SalesController
+  - use ReportingService abstraction for query logic
+  - enforce ManagerUp authorization at controller level
+  - keep v1 backend reads compatible with current transactional schema while summary-table migration track is prepared
+dependencies:
+  feature_dependencies:
+    - FEAT-001 Security and Configuration Hardening
+  module_dependencies:
+    - CrazyPOS.Server/Controllers/SalesController.cs
+    - CrazyPOS.Server/Models/crazypos_devContext.cs
+    - CrazyPOS.Server/Dto/SalesDto.cs
+    - crazypos.client/src/components/Dashboard.jsx
+  external_libraries:
+    backend: []
+    frontend:
+      - name: recharts
+        required: true
+        purpose: chart rendering for FEAT-004 dashboard views
+api_contract_changes:
+  new_endpoints:
+    - method: GET
+      path: /api/Reporting/GetDailySales
+      authorization: manager_up
+    - method: GET
+      path: /api/Reporting/GetHourlySales
+      authorization: manager_up
+    - method: GET
+      path: /api/Reporting/GetCashierPerformance
+      authorization: manager_up
+    - method: GET
+      path: /api/Reporting/GetCategoryPerformance
+      authorization: manager_up
+    - method: GET
+      path: /api/Reporting/GetTopProducts
+      authorization: manager_up
+    - method: GET
+      path: /api/Reporting/GetPaymentMethodPerformance
+      authorization: manager_up
+    - method: GET
+      path: /api/Reporting/GetTopPerformers
+      authorization: manager_up
+database_updates:
+  schema_changes:
+    - add reporting summary tables in CrazyPOS.Server/Database/FEAT-004_Reporting_Tables.sql
+  migration_artifacts:
+    - CrazyPOS.Server/Database/FEAT-004_Reporting_Tables.sql
+tasks:
+  - id: FEAT-004-T01
+    title: Build reporting DTO contracts
+    phase: implementation
+    status: completed
+    code_changes:
+      - CrazyPOS.Server/Dto/ReportingDto.cs
+  - id: FEAT-004-T02
+    title: Add reporting service abstraction and implementation
+    phase: implementation
+    status: completed
+    code_changes:
+      - CrazyPOS.Server/Services/IReportingService.cs
+      - CrazyPOS.Server/Services/ReportingService.cs
+  - id: FEAT-004-T03
+    title: Add ReportingController and route-level guardrails
+    phase: implementation
+    status: completed
+    code_changes:
+      - CrazyPOS.Server/Controllers/ReportingController.cs
+  - id: FEAT-004-T04
+    title: Wire DI registration for reporting service
+    phase: implementation
+    status: completed
+    code_changes:
+      - CrazyPOS.Server/Program.cs
+  - id: FEAT-004-T05
+    title: Add initial reporting tests
+    phase: implementation
+    status: completed
+    code_changes:
+      - CrazyPOS.Server.Tests/ReportingServiceTests.cs
+      - CrazyPOS.Server.Tests/ReportingControllerTests.cs
+  - id: FEAT-004-T06
+    title: Build frontend analytics views and API client integration
+    phase: implementation
+    status: completed
+    code_changes:
+      - crazypos.client/src/components/Dashboard.jsx
+      - crazypos.client/src/components/AnalyticsReport.jsx
+      - crazypos.client/src/utils/sales.js
+      - crazypos.client/src/App.jsx
+      - crazypos.client/package.json
+      - crazypos.client/package-lock.json
+validation:
+  backend_build:
+    command: dotnet build CrazyPOS.Server/CrazyPOS.Server.csproj
+  tests:
+    command: dotnet test CrazyPOS.Server.Tests/CrazyPOS.Server.Tests.csproj
+    note: existing unrelated compile failures in ReturnCalculationTests currently block full test pass

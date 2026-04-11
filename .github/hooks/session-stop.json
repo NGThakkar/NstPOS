@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "type": "command",
+        "windows": "powershell -ExecutionPolicy Bypass -File \".github/scripts/flag-memory-update.ps1\"",
+        "command": "bash .github/scripts/flag-memory-update.sh",
+        "timeout": 5
+      }
+    ]
+  }
+}

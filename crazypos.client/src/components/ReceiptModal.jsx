@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Printer, Mail, MessageSquare, Copy, CheckCircle, AlertCircle, Download } from 'lucide-react';
 import { getReceiptDetails, generateTextReceipt, generateHtmlReceipt, sendEmailReceipt, sendSmsReceipt } from '../utils/storage';
+import { formatSettlementStatus, formatReturnStatus } from '../utils/returns';
 
 export const ReceiptModal = ({ isOpen, transactionId, onClose }) => {
     const [receiptData, setReceiptData] = useState(null);

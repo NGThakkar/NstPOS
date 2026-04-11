@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Place an Order on Hold and Resume It Later user manual">
+  <title>Place an Order on Hold and Resume It Later | CrazyPOS Docs</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Place an Order on Hold and Resume It Later</h1>
+      <p class="subtitle"><a href="../index.html">Home</a> &gt; Task Manuals &gt; Place an Order on Hold and Resume It Later</p>
+    </div>
+  </header>
+  <main class="container">
+    <section class="manual-meta" aria-label="Manual metadata">
+      <div class="meta-item"><strong>Client:</strong> YOUR_CLIENT_NAME</div>
+      <div class="meta-item"><strong>User Role:</strong> Cashier</div>
+      <div class="meta-item"><strong>Difficulty Level:</strong> Intermediate</div>
+      <div class="meta-item"><strong>Estimated Time:</strong> 2-5 minutes</div>
+      <div class="meta-item"><strong>Last Updated:</strong> April 4, 2026</div>
+    </section>
+    <article class="card">
+<h2 id="1-overview">1. Overview</h2>
+<h3>What is this task?</h3>
+<p>This task explains how a cashier can park an in-progress cart as an on-hold order and resume it later without re-scanning items. It is used to handle interruptions such as customer missing payment method, price checks, or split counter service. Proper use avoids losing cart details and improves queue flow.</p>
+<h3>When to use this task</h3>
+<p>Use this task when checkout must pause temporarily but the sale should continue later on the same or another terminal, depending on store policy.</p>
+<h3>Key benefits</h3>
+<ul class="steps">
+<li>Preserve cart contents without restarting the sale.</li>
+<li>Reduce customer waiting time during temporary interruptions.</li>
+<li>Prevent duplicate scans and pricing mismatches when resuming.</li>
+</ul>
+<h2 id="2-prerequisites">2. Prerequisites</h2>
+<p>Before you begin, ensure you have:</p>
+<ul class="steps">
+<li>[ ] An active Cashier account with required permissions.</li>
+<li>[ ] Access to the relevant CrazyPOS module/screen.</li>
+<li>[ ] Required transaction/customer/product details available.</li>
+<li>[ ] Stable network connection to backend services.</li>
+<li>[ ] Role policy knowledge for approvals or restrictions.</li>
+</ul>
+<h3>Required information to gather</h3>
+<ul class="steps">
+<li>Transaction or record reference (if applicable)</li>
+<li>Required input details for this process</li>
+<li>Any policy notes or reason codes needed for submission</li>
+</ul>
+<h2 id="3-step-by-step-instructions">3. Step-by-Step Instructions</h2>
+<h3>Step 1: Open the relevant module</h3>
+<p>Open the active checkout cart that needs to be parked.</p>
+<ol>
+<li>Sign in with your Cashier account.</li>
+<li>Go to the target module from the main menu.</li>
+<li>Confirm the screen is ready for data entry or selection.</li>
+</ol>
+<blockquote><p><strong>Tip:</strong> Verify you are in the correct branch/store context before continuing.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Target module landing screen for Place an Order on Hold and Resume It Later</div>
+<h3>Step 2: Enter or select required details</h3>
+<p>Enter a hold reference (for example customer name or token) and save the order on hold.</p>
+<ol>
+<li>Search/select the required record or transaction.</li>
+<li>Enter all mandatory fields.</li>
+<li>Validate values before applying changes.</li>
+</ol>
+<blockquote><p><strong>Important:</strong> Incorrect inputs can produce invalid results or policy violations.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Data entry form or selection panel for this task</div>
+<h3>Step 3: Review and validate</h3>
+<p>Verify the order appears in the hold list with correct items and totals.</p>
+<ol>
+<li>Review summary totals/status fields.</li>
+<li>Confirm compliance with role policy.</li>
+<li>Correct any validation errors shown.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Review panel with totals/status/validation messages</div>
+<h3>Step 4: Submit or confirm action</h3>
+<p>Resume the parked order later and confirm cart values before proceeding to payment.</p>
+<ol>
+<li>Click the submit/confirm action for this screen.</li>
+<li>Wait for success confirmation.</li>
+<li>Note any generated reference ID for tracking.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Success confirmation with reference number</div>
+<h2 id="4-expected-outcomes">4. Expected Outcomes</h2>
+<p>After completing this task, you should see:</p>
+<ul class="steps">
+<li>[ ] The action is saved successfully in CrazyPOS.</li>
+<li>[ ] Status and totals reflect the final result.</li>
+<li>[ ] A reference ID or audit entry is generated.</li>
+<li>[ ] The workflow is ready for the next related step.</li>
+</ul>
+<h3>Success indicators</h3>
+<ul class="steps">
+<li>No blocking validation or policy error remains.</li>
+<li>Record visibility is updated in list/history views.</li>
+</ul>
+<h2 id="5-troubleshooting-faq">5. Troubleshooting &amp; FAQ</h2>
+<h3>Q: I cannot find the held order.</h3>
+<p><strong>A:</strong> Check hold list filters, cashier/store context, and hold reference text.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Search/filter panel showing criteria fields</div>
+<h3>Q: The system prevents submission.</h3>
+<p><strong>A:</strong> Required fields, permissions, or policy checks may be incomplete.</p>
+<p><strong>Steps to resolve:</strong></p>
+<ol>
+<li>Review highlighted required fields.</li>
+<li>Confirm your role has access for this action.</li>
+<li>Re-validate and submit again.</li>
+</ol>
+<h3>Q: Results do not match expected values.</h3>
+<p><strong>A:</strong> Input data may have changed, or the record needs recalculation/reload.</p>
+<blockquote><p><strong>Note:</strong> Refresh the screen and repeat validation before escalating.</p></blockquote>
+<h3>Common errors</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Error</th>
+<th>Cause</th>
+<th>Solution</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Hold action unavailable</td>
+<td>User lacks hold-order permission</td>
+<td>Ask manager/admin to grant hold access</td>
+</tr>
+<tr>
+<td>Held order not listed</td>
+<td>Wrong terminal/store filter or expired hold</td>
+<td>Refresh list and check hold policy window</td>
+</tr>
+<tr>
+<td>Resume failed</td>
+<td>Order locked by another session</td>
+<td>Retry after unlock or resume from original terminal</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-related-tasks">6. Related Tasks</h2>
+<ul class="steps">
+<li><strong>Start a New Sale with Cart and Payment</strong> - Related workflow reference for this task.</li>
+</ul>
+<h2 id="7-additional-notes-tips">7. Additional Notes &amp; Tips</h2>
+<h3>Best practices</h3>
+<ul class="steps">
+<li>Follow the same sequence each time to avoid omissions.</li>
+<li>Recheck critical values before final confirmation.</li>
+<li>Keep notes concise and policy-based for audit history.</li>
+</ul>
+<h3>Common pitfalls to avoid</h3>
+<ul class="steps">
+<li>Submitting without reviewing summary details.</li>
+<li>Applying changes in the wrong transaction/context.</li>
+</ul>
+<h3>Keyboard shortcuts (if applicable)</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Tab</td>
+<td>Move to the next input field</td>
+</tr>
+<tr>
+<td>Enter</td>
+<td>Confirm highlighted action where enabled</td>
+</tr>
+</tbody>
+</table>
+<h2 id="need-help">Need help?</h2>
+<p><strong>Contact Support:</strong></p>
+<ul class="steps">
+<li>Email: support@your-client-domain.com</li>
+<li>Phone: +1-000-000-0000</li>
+<li>Help Desk Hours: Monday-Friday, 8:00 AM-6:00 PM</li>
+<li>Knowledge Base: https://your-client-support.local</li>
+</ul>
+<p><strong>Document Version:</strong> 1.0</p>
+<p><strong>Author:</strong> CrazyPOS Documentation Team</p>
+<p><strong>Next Review Date:</strong> July 4, 2026</p>
+    </article>
+  </main>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/search.js"></script>
+</body>
+</html>

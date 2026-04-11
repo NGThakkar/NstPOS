@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Modern role-based user manuals for CrazyPOS operations, onboarding, and support workflows.">
+  <title>CrazyPOS User Manuals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header class="site-header landing-header">
+    <div class="container hero-shell">
+      <div class="hero-copy">
+        <p class="eyebrow">CrazyPOS Knowledge Base</p>
+        <h1>User Manuals Built for Fast Operations</h1>
+        <p class="subtitle">Role-aware procedures for Admin, Cashier, and Manager teams with searchable task workflows.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#manual-grid">Browse Manuals</a>
+          <a class="btn btn-secondary" href="pages/index.html">All Manuals</a>
+        </div>
+      </div>
+      <div class="hero-panel card">
+        <h2>Quick Access</h2>
+        <p>Use search and filters to jump directly to the manual you need during operations.</p>
+        <ul class="steps">
+          <li>Search by task name, role, or keyword</li>
+          <li>Filter by role and difficulty</li>
+          <li>Open manuals in one click</li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="toolbar card" aria-label="Manual filters">
+      <div class="control-group control-search">
+        <label for="site-search">Search manuals</label>
+        <input id="site-search" type="search" placeholder="Try: return, promotions, user access" autocomplete="off">
+      </div>
+      <div class="control-group">
+        <label for="role-filter">User role</label>
+        <select id="role-filter">
+          <option value="all">All roles</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="difficulty-filter">Difficulty</label>
+        <select id="difficulty-filter">
+          <option value="all">All levels</option>
+        </select>
+      </div>
+      <div class="control-group control-meta">
+        <span id="manual-count" class="badge">0 manuals</span>
+        <span id="index-date" class="muted">Index loading...</span>
+      </div>
+    </section>
+
+    <section id="manual-grid" class="manual-grid" aria-live="polite"></section>
+
+    <section id="empty-state" class="card empty-state" hidden>
+      <h2>No matching manuals</h2>
+      <p>Try clearing filters or using broader keywords.</p>
+    </section>
+
+    <section class="card helper-links">
+      <a href="pages/index.html">All manual pages</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>CrazyPOS documentation portal</p>
+    </div>
+  </footer>
+
+  <script src="search-index.js"></script>
+  <script src="assets/js/navigation.js"></script>
+  <script src="assets/js/search.js"></script>
+</body>
+</html>

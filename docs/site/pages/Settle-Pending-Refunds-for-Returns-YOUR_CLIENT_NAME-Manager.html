@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Settle Pending Refunds for Returns user manual">
+  <title>Settle Pending Refunds for Returns | CrazyPOS Docs</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Settle Pending Refunds for Returns</h1>
+      <p class="subtitle"><a href="../index.html">Home</a> &gt; Task Manuals &gt; Settle Pending Refunds for Returns</p>
+    </div>
+  </header>
+  <main class="container">
+    <section class="manual-meta" aria-label="Manual metadata">
+      <div class="meta-item"><strong>Client:</strong> YOUR_CLIENT_NAME</div>
+      <div class="meta-item"><strong>User Role:</strong> Manager</div>
+      <div class="meta-item"><strong>Difficulty Level:</strong> Intermediate</div>
+      <div class="meta-item"><strong>Estimated Time:</strong> 2-5 minutes</div>
+      <div class="meta-item"><strong>Last Updated:</strong> April 4, 2026</div>
+    </section>
+    <article class="card">
+<h2 id="1-overview">1. Overview</h2>
+<h3>What is this task?</h3>
+<p>This task helps Manager users approve and settle pending return refunds in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and easy to audit.</p>
+<h3>When to use this task</h3>
+<p>Use this task after returns are created and queued for payout.</p>
+<h3>Key benefits</h3>
+<ul class="steps">
+<li>Control refund authorization</li>
+<li>Keep cash/card reconciliation accurate</li>
+<li>Close return cases faster</li>
+</ul>
+<h2 id="2-prerequisites">2. Prerequisites</h2>
+<p>Before you begin, ensure you have:</p>
+<ul class="steps">
+<li>[ ] Manager approval rights are active</li>
+<li>[ ] Pending refund queue is accessible</li>
+<li>[ ] Payment method rules are known</li>
+<li>[ ] Cash drawer/card settlement channel is available</li>
+</ul>
+<h3>Required information to gather</h3>
+<ul class="steps">
+<li>Return ID</li>
+<li>Refund amount</li>
+<li>Settlement method</li>
+</ul>
+<h2 id="3-step-by-step-instructions">3. Step-by-Step Instructions</h2>
+<h3>Step 1: Access the correct module</h3>
+<p>Open the pending refunds queue for returns and prepare the settlement view.</p>
+<ol>
+<li>Sign in with your Manager account.</li>
+<li>Open Returns and navigate to Pending Refunds.</li>
+<li>Confirm branch filter and settlement date are correct.</li>
+</ol>
+<blockquote><p><strong>Tip:</strong> Verify filters and context before editing any records.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Landing screen for Settle Pending Refunds for Returns</div>
+<h3>Step 2: Enter required details</h3>
+<p>Review each return and verify amount/method</p>
+<ol>
+<li>Select a pending refund entry from the settlement queue.</li>
+<li>Verify refund amount, reason, and payment channel.</li>
+<li>Confirm return status is approved for settlement.</li>
+</ol>
+<blockquote><p><strong>Important:</strong> Incorrect values can cause policy or reconciliation issues.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Data entry and selection fields for Settle Pending Refunds for Returns</div>
+<h3>Step 3: Validate the result</h3>
+<p>Approve and settle refund transaction</p>
+<ol>
+<li>Review refund amount, channel status, and risk warnings.</li>
+<li>Validate payout method against policy limits.</li>
+<li>Resolve mismatches before approving payout.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Validation panel with totals and status checks</div>
+<h3>Step 4: Submit and confirm</h3>
+<p>Confirm status changes to settled and log reference</p>
+<ol>
+<li>Confirm settlement action for the selected refund.</li>
+<li>Confirm settlement status changes to Settled.</li>
+<li>Record settlement reference for reconciliation.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Success message with generated reference</div>
+<h2 id="4-expected-outcomes">4. Expected Outcomes</h2>
+<p>After completing this task, you should see:</p>
+<ul class="steps">
+<li>[ ] The workflow is saved successfully.</li>
+<li>[ ] Status reflects the final approved/submitted state.</li>
+<li>[ ] A reference ID or log entry is generated.</li>
+<li>[ ] The process is ready for related follow-up tasks.</li>
+</ul>
+<h3>Success indicators</h3>
+<ul class="steps">
+<li>No blocking validation or policy error remains.</li>
+<li>Record updates are visible in list/history views.</li>
+</ul>
+<h2 id="5-troubleshooting-faq">5. Troubleshooting &amp; FAQ</h2>
+<h3>Q: Refund is not in queue</h3>
+<p><strong>A:</strong> Check return status and branch filter.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Relevant screen for Refund is not in queue</div>
+<h3>Q: Settlement method unavailable</h3>
+<p><strong>A:</strong> Verify gateway/device availability and permissions.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Relevant screen for Settlement method unavailable</div>
+<h3>Q: Refund remains pending</h3>
+<p><strong>A:</strong> Refresh queue and inspect submission log.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Relevant screen for Refund remains pending</div>
+<h3>Common errors</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Error</th>
+<th>Cause</th>
+<th>Solution</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Refund not eligible</td>
+<td>Return not approved yet</td>
+<td>Approve return first then settle</td>
+</tr>
+<tr>
+<td>Settlement failed</td>
+<td>Payment channel timeout</td>
+<td>Retry once then switch allowed method</td>
+</tr>
+<tr>
+<td>Amount mismatch</td>
+<td>Manual edit or stale data</td>
+<td>Reload return and re-validate amount</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-related-tasks">6. Related Tasks</h2>
+<ul class="steps">
+<li><strong>Create a Sales Return</strong> - Related workflow reference for this task.</li>
+</ul>
+<h2 id="7-additional-notes-tips">7. Additional Notes &amp; Tips</h2>
+<h3>Best practices</h3>
+<ul class="steps">
+<li>Follow the same sequence every time.</li>
+<li>Confirm critical amounts and statuses before submit.</li>
+<li>Record concise, policy-based notes for audit clarity.</li>
+</ul>
+<h3>Common pitfalls to avoid</h3>
+<ul class="steps">
+<li>Submitting without final validation.</li>
+<li>Processing in the wrong branch/store context.</li>
+</ul>
+<h3>Keyboard shortcuts (if applicable)</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Tab</td>
+<td>Move to the next field</td>
+</tr>
+<tr>
+<td>Enter</td>
+<td>Confirm focused action where enabled</td>
+</tr>
+</tbody>
+</table>
+<h2 id="need-help">Need help?</h2>
+<p><strong>Contact Support:</strong></p>
+<ul class="steps">
+<li>Email: support@your-client-domain.com</li>
+<li>Phone: +1-000-000-0000</li>
+<li>Help Desk Hours: Monday-Friday, 8:00 AM-6:00 PM</li>
+<li>Knowledge Base: https://your-client-support.local</li>
+</ul>
+<p><strong>Document Version:</strong> 1.1</p>
+<p><strong>Author:</strong> CrazyPOS Documentation Team</p>
+<p><strong>Next Review Date:</strong> July 4, 2026</p>
+    </article>
+  </main>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/search.js"></script>
+</body>
+</html>

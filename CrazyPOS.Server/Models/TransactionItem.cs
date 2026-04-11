@@ -13,6 +13,8 @@ public partial class TransactionItem
 
     public int Quantity { get; set; }
 
+    public int ReturnedQuantity { get; set; }
+
     public decimal UnitPrice { get; set; }
 
     public decimal DiscountPercent { get; set; }
@@ -34,4 +36,6 @@ public partial class TransactionItem
     public virtual Product Product { get; set; }
 
     public virtual Promotion Promotion { get; set; }
+
+    public virtual ICollection<ReturnItem> ReturnItems { get; set; } = new List<ReturnItem>();
 }

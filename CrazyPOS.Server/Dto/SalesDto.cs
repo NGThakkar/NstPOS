@@ -24,6 +24,8 @@ namespace CrazyPOS.Server.Dto
         public decimal? AmountTendered { get; set; }
         public decimal? ChangeAmount { get; set; }
         public decimal DiscountAmount { get; set; }
+        public decimal RefundedAmount { get; set; }
+        public string ReturnStatus { get; set; }
         public string Notes { get; set; }
         public string Status { get; set; }
         public string Cashier { get; set; }
@@ -37,6 +39,7 @@ namespace CrazyPOS.Server.Dto
         public long ProductId { get; set; }
         public string ProductName { get; set; }
         public int Quantity { get; set; }
+        public int ReturnedQuantity { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal DiscountPercent { get; set; }
         public decimal DiscountAmount { get; set; }

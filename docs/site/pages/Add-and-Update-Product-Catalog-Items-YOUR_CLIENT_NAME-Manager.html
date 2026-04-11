@@ -1,0 +1,184 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Add and Update Product Catalog Items user manual">
+  <title>Add and Update Product Catalog Items | CrazyPOS Docs</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Add and Update Product Catalog Items</h1>
+      <p class="subtitle"><a href="../index.html">Home</a> &gt; Task Manuals &gt; Add and Update Product Catalog Items</p>
+    </div>
+  </header>
+  <main class="container">
+    <section class="manual-meta" aria-label="Manual metadata">
+      <div class="meta-item"><strong>Client:</strong> YOUR_CLIENT_NAME</div>
+      <div class="meta-item"><strong>User Role:</strong> Manager</div>
+      <div class="meta-item"><strong>Difficulty Level:</strong> Intermediate</div>
+      <div class="meta-item"><strong>Estimated Time:</strong> 5-12 minutes</div>
+      <div class="meta-item"><strong>Last Updated:</strong> April 4, 2026</div>
+    </section>
+    <article class="card">
+<h2 id="1-overview">1. Overview</h2>
+<h3>What is this task?</h3>
+<p>This task helps Manager users create new products and maintain existing product details in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and easy to audit.</p>
+<h3>When to use this task</h3>
+<p>Use this task when onboarding new SKUs or correcting product metadata.</p>
+<h3>Key benefits</h3>
+<ul class="steps">
+<li>Keep POS search and scanning accurate</li>
+<li>Improve pricing consistency</li>
+<li>Reduce checkout and inventory errors</li>
+</ul>
+<h2 id="2-prerequisites">2. Prerequisites</h2>
+<p>Before you begin, ensure you have:</p>
+<ul class="steps">
+<li>[ ] Manager catalog permissions are active</li>
+<li>[ ] Category structure exists</li>
+<li>[ ] SKU/barcode standards are known</li>
+<li>[ ] Pricing/tax rules are available</li>
+</ul>
+<h3>Required information to gather</h3>
+<ul class="steps">
+<li>SKU/barcode</li>
+<li>Product name and category</li>
+<li>Selling price, tax, and status</li>
+</ul>
+<h2 id="3-step-by-step-instructions">3. Step-by-Step Instructions</h2>
+<h3>Step 1: Access the correct module</h3>
+<p>Open catalog management and choose the add or edit product screen.</p>
+<ol>
+<li>Sign in with your Manager account.</li>
+<li>Open Product Catalog and choose Add Item or Edit Item.</li>
+<li>Confirm the selected branch/catalog scope.</li>
+</ol>
+<blockquote><p><strong>Tip:</strong> Verify filters and context before editing any records.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Landing screen for Add and Update Product Catalog Items</div>
+<h3>Step 2: Enter required details</h3>
+<p>Enter product identifiers, names, category, and pricing</p>
+<ol>
+<li>Choose Add Product or open an existing product for edit.</li>
+<li>Enter SKU/barcode, name, category, and pricing fields.</li>
+<li>Set tax profile, unit, and active status.</li>
+</ol>
+<blockquote><p><strong>Important:</strong> Incorrect values can cause policy or reconciliation issues.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Data entry and selection fields for Add and Update Product Catalog Items</div>
+<h3>Step 3: Validate the result</h3>
+<p>Validate barcode uniqueness and tax setup</p>
+<ol>
+<li>Review uniqueness and validation messages for product data.</li>
+<li>Check barcode uniqueness and duplicate product warnings.</li>
+<li>Validate category assignment and tax settings.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Validation panel with totals and status checks</div>
+<h3>Step 4: Submit and confirm</h3>
+<p>Save changes and verify product appears in POS search</p>
+<ol>
+<li>Click Save Product to commit catalog changes.</li>
+<li>Confirm save success and item visibility in search.</li>
+<li>Test scan/search behavior on POS terminal.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Success message with generated reference</div>
+<h2 id="4-expected-outcomes">4. Expected Outcomes</h2>
+<p>After completing this task, you should see:</p>
+<ul class="steps">
+<li>[ ] The workflow is saved successfully.</li>
+<li>[ ] Status reflects the final approved/submitted state.</li>
+<li>[ ] A reference ID or log entry is generated.</li>
+<li>[ ] The process is ready for related follow-up tasks.</li>
+</ul>
+<h3>Success indicators</h3>
+<ul class="steps">
+<li>No blocking validation or policy error remains.</li>
+<li>Record updates are visible in list/history views.</li>
+</ul>
+<h2 id="5-troubleshooting-faq">5. Troubleshooting &amp; FAQ</h2>
+<h3>Q: Barcode already exists</h3>
+<p><strong>A:</strong> Use existing item or assign a new unique barcode.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Relevant screen for Barcode already exists</div>
+<h3>Q: Product not visible at checkout</h3>
+<p><strong>A:</strong> Check active status and branch availability.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Relevant screen for Product not visible at checkout</div>
+<h3>Q: Price not updated</h3>
+<p><strong>A:</strong> Confirm save success and clear cache/reload POS.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Relevant screen for Price not updated</div>
+<h3>Common errors</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Error</th>
+<th>Cause</th>
+<th>Solution</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Duplicate SKU/barcode</td>
+<td>Identifier already in use</td>
+<td>Use unique identifier or edit existing product</td>
+</tr>
+<tr>
+<td>Invalid tax configuration</td>
+<td>Missing or incompatible tax profile</td>
+<td>Assign valid tax profile and retry</td>
+</tr>
+<tr>
+<td>Save rejected</td>
+<td>Missing required fields</td>
+<td>Complete mandatory catalog fields</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-related-tasks">6. Related Tasks</h2>
+<ul class="steps">
+<li><strong>Manage Product Categories</strong> - Related workflow reference for this task.</li>
+<li><strong>Monitor and Adjust Inventory</strong> - Related workflow reference for this task.</li>
+</ul>
+<h2 id="7-additional-notes-tips">7. Additional Notes &amp; Tips</h2>
+<h3>Best practices</h3>
+<ul class="steps">
+<li>Follow the same sequence every time.</li>
+<li>Confirm critical amounts and statuses before submit.</li>
+<li>Record concise, policy-based notes for audit clarity.</li>
+</ul>
+<h3>Common pitfalls to avoid</h3>
+<ul class="steps">
+<li>Submitting without final validation.</li>
+<li>Processing in the wrong branch/store context.</li>
+</ul>
+<h3>Keyboard shortcuts (if applicable)</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Tab</td>
+<td>Move to the next field</td>
+</tr>
+<tr>
+<td>Enter</td>
+<td>Confirm focused action where enabled</td>
+</tr>
+</tbody>
+</table>
+<h2 id="need-help">Need help?</h2>
+<p><strong>Contact Support:</strong></p>
+<ul class="steps">
+<li>Email: support@your-client-domain.com</li>
+<li>Phone: +1-000-000-0000</li>
+<li>Help Desk Hours: Monday-Friday, 8:00 AM-6:00 PM</li>
+<li>Knowledge Base: https://your-client-support.local</li>
+</ul>
+<p><strong>Document Version:</strong> 1.1</p>
+<p><strong>Author:</strong> CrazyPOS Documentation Team</p>
+<p><strong>Next Review Date:</strong> July 4, 2026</p>
+    </article>
+  </main>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/search.js"></script>
+</body>
+</html>

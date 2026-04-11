@@ -4,6 +4,7 @@ import {
     ShoppingCart,
     Package,
     History,
+    BarChart3,
     Settings,
     Store,
     LogOut,
@@ -24,9 +25,12 @@ import { Login } from './components/Login';
 import { Sales } from './components/Sales';
 import { UserManagement } from './components/UserManagement';
 import { PromotionManagement } from './components/PromotionManagement';
+import { AnalyticsReport } from './components/AnalyticsReport';
+import { InternalAgentPanel } from './components/InternalAgentPanel';
 import { sampleProducts } from './data/products';
 import { loadTransactionsFromDatabase, saveTransaction, loadProducts, loadCategories } from './utils/storage';
 import { getStoredToken, getStoredUser, logoutUser, validateToken } from './utils/auth';
+import { parseInternalAgentCommand } from './utils/internalAgent';
 
 function App() {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -41,6 +45,8 @@ function App() {
     const [isLoading, setIsLoading] = useState(false);
     const [categoriesList, setCategoriesList] = useState([]);
     const [transactionFilters, setTransactionFilters] = useState(null);
+    const [agentBusy, setAgentBusy] = useState(false);
+    const [agentMessage, setAgentMessage] = useState('');
 
     useEffect(() => {
         async function bootstrapAuth() {
@@ -246,6 +252,136 @@ function App() {
         setProductMenuOpen((prev) => !prev);
     };
 
+    const isInternalAgentAllowed = ['Admin', 'Manager'].includes(currentUser?.role);
+
+    const executeInternalAgentAction = async (command) => {
+        setAgentBusy(true);
+        setAgentMessage('');
+        try {
+            const result = await parseInternalAgentCommand(command);
+
+            if (!result?.success) {
+                setAgentMessage(result?.message || 'Command could not be parsed.');
+                return;
+            }
+
+            if (result.action === 'navigate_tab') {
+                if (!result.target) {
+                    setAgentMessage('Missing destination tab.');
+                    return;
+                }
+
+                const allowedTabIds = new Set();
+                filteredNavigation.forEach(item => {
+                    if (item.submenu && Array.isArray(item.submenu)) {
+                        item.submenu.forEach(sub => allowedTabIds.add(sub.id));
+                        return;
+                    }
+                    allowedTabIds.add(item.id);
+                });
+
+                if (!allowedTabIds.has(result.target)) {
+                    setAgentMessage('You do not have permission to open that tab.');
+                    return;
+                }
+
+                setActiveTab(result.target);
+                setAgentMessage(result.message || `Opened ${result.target}.`);
+                return;
+            }
+
+            if (result.action === 'add_products_to_cart') {
+                const requestedCodes = Array.isArray(result.productCodes)
+                    ? result.productCodes.map(code => String(code).trim().toUpperCase()).filter(Boolean)
+                    : [];
+
+                if (requestedCodes.length === 0) {
+                    setAgentMessage('No product codes were returned by the internal agent.');
+                    return;
+                }
+
+                if (activeTab !== 'pos') {
+                    setActiveTab('pos');
+                }
+
+                let workingProducts = products;
+                if (!Array.isArray(workingProducts) || workingProducts.length === 0) {
+                    try {
+                        const loaded = await loadProducts();
+                        workingProducts = Array.isArray(loaded) ? loaded : [];
+                        setProducts(workingProducts);
+                    } catch {
+                        workingProducts = [];
+                    }
+                }
+
+                const toProductCode = (product) => {
+                    const id = product?.productid ?? product?.id;
+                    if (id === null || id === undefined) return null;
+                    return `P${String(id).toUpperCase()}`;
+                };
+
+                const normalizedProduct = (product) => {
+                    if (product?.productid !== undefined && product?.productid !== null) {
+                        return product;
+                    }
+                    if (product?.id !== undefined && product?.id !== null) {
+                        return { ...product, productid: Number(product.id) || product.id };
+                    }
+                    return product;
+                };
+
+                const added = [];
+                const missing = [];
+
+                requestedCodes.forEach(code => {
+                    const match = workingProducts.find(product => {
+                        const productCode = toProductCode(product);
+                        return productCode === code;
+                    });
+
+                    if (!match) {
+                        missing.push(code);
+                        return;
+                    }
+
+                    handleAddToCart(normalizedProduct(match));
+                    added.push(code);
+                });
+
+                if (added.length === 0) {
+                    setAgentMessage(`No matching products found for: ${requestedCodes.join(', ')}`);
+                    return;
+                }
+
+                if (missing.length > 0) {
+                    setAgentMessage(`Added ${added.join(', ')}. Not found: ${missing.join(', ')}.`);
+                    return;
+                }
+
+                setAgentMessage(result.message || `Added ${added.join(', ')} to cart.`);
+                return;
+            }
+
+            if (result.action === 'logout') {
+                if (result.requiresConfirmation && !window.confirm('Proceed with logout?')) {
+                    setAgentMessage('Logout cancelled.');
+                    return;
+                }
+
+                await handleLogout();
+                setAgentMessage('Logged out successfully.');
+                return;
+            }
+
+            setAgentMessage(result.message || 'No supported action was executed.');
+        } catch (error) {
+            setAgentMessage(error?.message || 'Internal agent request failed.');
+        } finally {
+            setAgentBusy(false);
+        }
+    };
+
     // Show login screen if not authenticated
     if (!isAuthenticated) {
         return <Login onLoginSuccess={handleLoginSuccess} />;
@@ -266,6 +402,7 @@ function App() {
         { id: 'inventory', name: 'Inventory', icon: Package },
         { id: 'customers', name: 'Customers', icon: Users },
         { id: 'promotions', name: 'Promotions', icon: Tag },
+        { id: 'analytics', name: 'Analytics', icon: BarChart3 },
         { id: 'users', name: 'Users', icon: Users },
         { id: 'transactions', name: 'Transactions', icon: History },
         { id: 'settings', name: 'Settings', icon: Settings }
@@ -277,8 +414,8 @@ function App() {
         
         // Define which menu items are available for each role
         const rolePermissions = {
-            'Admin': ['dashboard', 'product', 'sales', 'inventory', 'customers', 'promotions', 'users', 'transactions', 'settings'],
-            'Manager': ['dashboard', 'product', 'sales', 'inventory', 'customers', 'promotions', 'transactions'],
+            'Admin': ['dashboard', 'product', 'sales', 'inventory', 'customers', 'promotions', 'analytics', 'users', 'transactions', 'settings'],
+            'Manager': ['dashboard', 'product', 'sales', 'inventory', 'customers', 'promotions', 'analytics', 'transactions'],
             'Cashier': ['dashboard', 'sales', 'customers', 'transactions']
         };
 
@@ -394,6 +531,18 @@ function App() {
                             </div>
                         ) : (
                             <PromotionManagement currentUser={currentUser} />
+                        )}
+                    </>
+                );
+            case 'analytics':
+                return (
+                    <>
+                        {isLoading ? (
+                            <div className="flex items-center justify-center h-full">
+                                <Spinner />
+                            </div>
+                        ) : (
+                            <AnalyticsReport />
                         )}
                     </>
                 );
@@ -514,6 +663,13 @@ function App() {
 
                 {/* Main Content */}
                 <main className="flex-1 p-6">
+                    {isInternalAgentAllowed ? (
+                        <InternalAgentPanel
+                            onRunCommand={executeInternalAgentAction}
+                            lastMessage={agentMessage}
+                            isBusy={agentBusy}
+                        />
+                    ) : null}
                     {renderContent()}
                 </main>
             </div>

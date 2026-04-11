@@ -1,0 +1,1 @@
+crazypos.client\src\assets\react.svg

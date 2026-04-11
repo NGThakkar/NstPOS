@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="All CrazyPOS manual pages in one place.">
+  <title>All Manual Pages | CrazyPOS Docs</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>All Manual Pages</h1>
+      <p class="subtitle"><a href="../index.html">Home</a> &gt; Manual Pages</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="toolbar card" aria-label="Manual filters">
+      <div class="control-group control-search">
+        <label for="site-search">Search manuals</label>
+        <input id="site-search" type="search" placeholder="Search manual titles" autocomplete="off">
+      </div>
+      <div class="control-group">
+        <label for="role-filter">User role</label>
+        <select id="role-filter">
+          <option value="all">All roles</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="difficulty-filter">Difficulty</label>
+        <select id="difficulty-filter">
+          <option value="all">All levels</option>
+        </select>
+      </div>
+      <div class="control-group control-meta">
+        <span id="manual-count" class="badge">0 manuals</span>
+        <span id="index-date" class="muted">Index loading...</span>
+      </div>
+    </section>
+
+    <section id="manual-grid" class="manual-grid" aria-live="polite"></section>
+
+    <section id="empty-state" class="card empty-state" hidden>
+      <h2>No matching manuals</h2>
+      <p>Try adjusting your filters.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>CrazyPOS documentation portal</p>
+    </div>
+  </footer>
+
+  <script src="../search-index.js"></script>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/search.js"></script>
+</body>
+</html>

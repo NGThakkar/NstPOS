@@ -1,19 +1,19 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { DollarSign, ShoppingCart, Users, TrendingUp, Dot } from 'lucide-react';
+import { getReportingDailySales } from '../utils/sales';
 
-export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters, currentUser }) => {
-    const today = new Date().toDateString();
-    const todayTransactions = transactions.filter(t => {
-        // Handle both database and localStorage transaction formats
+function buildLocalKpis(transactions) {
+    const todayKey = new Date().toDateString();
+    const todayTransactions = transactions.filter((t) => {
         const transDate = t.transactionDate || t.timestamp;
-        return new Date(transDate).toDateString() === today;
+        return new Date(transDate).toDateString() === todayKey;
     });
 
     const todaySales = todayTransactions.reduce((sum, t) => sum + (t.totalAmount || t.total || 0), 0);
     const todayOrders = todayTransactions.length;
     const avgOrderValue = todayOrders > 0 ? todaySales / todayOrders : 0;
 
-    const thisWeek = transactions.filter(t => {
+    const thisWeek = transactions.filter((t) => {
         const transDate = t.transactionDate || t.timestamp;
         const transactionDate = new Date(transDate);
         const weekAgo = new Date();
@@ -22,6 +22,70 @@ export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters, c
     });
 
     const weekSales = thisWeek.reduce((sum, t) => sum + (t.totalAmount || t.total || 0), 0);
+
+    return {
+        todaySales,
+        todayOrders,
+        avgOrderValue,
+        weekSales
+    };
+}
+
+export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters, currentUser }) => {
+    const userRole = currentUser?.role || 'Cashier';
+    const localKpis = useMemo(() => buildLocalKpis(transactions), [transactions]);
+    const [kpis, setKpis] = useState(localKpis);
+    const [kpiSource, setKpiSource] = useState('local');
+
+    useEffect(() => {
+        if (userRole === 'Cashier') {
+            setKpis(localKpis);
+            setKpiSource('local');
+            return;
+        }
+
+        let canceled = false;
+
+        const loadLiveKpis = async () => {
+            try {
+                const today = new Date();
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 6);
+
+                const todayKey = today.toISOString().split('T')[0];
+                const fromDate = weekAgo.toISOString().split('T')[0];
+                const toDate = todayKey;
+
+                const dailyRows = await getReportingDailySales(fromDate, toDate);
+                const rows = Array.isArray(dailyRows) ? dailyRows : [];
+                const todayRow = rows.find((row) => String(row.date).startsWith(todayKey));
+                const weekSales = rows.reduce((sum, row) => sum + (row.totalSales || 0), 0);
+
+                const liveKpis = {
+                    todaySales: todayRow?.totalSales || 0,
+                    todayOrders: todayRow?.transactionCount || 0,
+                    avgOrderValue: todayRow?.averageTransaction || 0,
+                    weekSales
+                };
+
+                if (!canceled) {
+                    setKpis(liveKpis);
+                    setKpiSource('live');
+                }
+            } catch {
+                if (!canceled) {
+                    setKpis(localKpis);
+                    setKpiSource('local');
+                }
+            }
+        };
+
+        loadLiveKpis();
+
+        return () => {
+            canceled = true;
+        };
+    }, [localKpis, userRole]);
 
     // Handle Today's Sales click
     const handleTodaySalesClick = () => {
@@ -54,7 +118,7 @@ export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters, c
     const stats = [
         {
             title: "Today's Sales",
-            value: `$${todaySales.toFixed(2)}`,
+            value: `$${kpis.todaySales.toFixed(2)}`,
             icon: DollarSign,
             change: '+12.5%',
             positive: true,
@@ -63,21 +127,21 @@ export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters, c
         },
         {
             title: 'Orders Today',
-            value: todayOrders.toString(),
+            value: kpis.todayOrders.toString(),
             icon: ShoppingCart,
             change: '+8.2%',
             positive: true
         },
         {
             title: 'Average Order',
-            value: `$${avgOrderValue.toFixed(2)}`,
+            value: `$${kpis.avgOrderValue.toFixed(2)}`,
             icon: Users,
             change: '+5.4%',
             positive: true
         },
         {
             title: 'Week Sales',
-            value: `$${weekSales.toFixed(2)}`,
+            value: `$${kpis.weekSales.toFixed(2)}`,
             icon: TrendingUp,
             change: '+23.1%',
             positive: true,
@@ -85,8 +149,6 @@ export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters, c
             clickable: true
         }
     ];
-
-    const userRole = currentUser?.role || 'Cashier';
 
     return (
         <div className="space-y-6">
@@ -124,6 +186,12 @@ export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters, c
                     </div>
                 ))}
             </div>
+
+            {kpiSource === 'local' && userRole !== 'Cashier' && (
+                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    Live reporting KPIs are temporarily unavailable. Showing local transaction-derived values.
+                </p>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
@@ -172,7 +240,7 @@ export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters, c
                             <button onClick={() => { setActiveTab('inventory') }} className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg hover:bg-orange-700 transition-colors font-medium">
                                 View Inventory
                             </button>
-                            <button className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                            <button onClick={() => { setActiveTab('analytics') }} className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium">
                                 Generate Report
                             </button>
                         </>

@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "windows": "powershell -ExecutionPolicy Bypass -File \".github/scripts/inject-memory.ps1\"",
+        "command": "bash .github/scripts/inject-memory.sh",
+        "timeout": 10
+      }
+    ]
+  }
+}

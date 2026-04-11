@@ -241,6 +241,8 @@ namespace CrazyPOS.Server.Controllers
                         AmountTendered = amountTendered,
                         ChangeAmount = amountTendered - pricingSnapshot.TotalAmount,
                         DiscountAmount = pricingSnapshot.DiscountAmount,
+                        RefundedAmount = 0,
+                        ReturnStatus = "none",
                         Notes = transactionDto.Notes,
                         Status = "completed",
                         IsActive = true,
@@ -386,6 +388,8 @@ namespace CrazyPOS.Server.Controllers
                         AmountTendered = transaction.AmountTendered,
                         ChangeAmount = transaction.ChangeAmount,
                         DiscountAmount = transaction.DiscountAmount,
+                        RefundedAmount = transaction.RefundedAmount,
+                        ReturnStatus = transaction.ReturnStatus,
                         Status = transaction.Status,
                         Cashier = transaction.User?.FullName ?? "Unknown",
                         Items = transaction.TransactionItems.Select(ti => new TransactionItemDto
@@ -394,6 +398,7 @@ namespace CrazyPOS.Server.Controllers
                             ProductId = ti.Productid,
                             ProductName = ti.Product.Name,
                             Quantity = ti.Quantity,
+                            ReturnedQuantity = ti.ReturnedQuantity,
                             UnitPrice = ti.UnitPrice,
                             DiscountPercent = ti.DiscountPercent,
                             DiscountAmount = ti.DiscountAmount,
@@ -492,6 +497,11 @@ namespace CrazyPOS.Server.Controllers
                         t.TotalAmount,
                         t.PaymentMethod,
                         t.Status,
+                        t.RefundedAmount,
+                        t.ReturnStatus,
+                        HasOpenRefundSettlement = dbContext.SalesReturns
+                            .Where(r => r.OriginalTransactionId == t.TransactionId)
+                            .Any(r => r.RefundStatus == "pending"),
                         ItemCount = dbContext.TransactionItems.Count(ti => ti.TransactionId == t.TransactionId)
                     }).ToList();
 
@@ -558,6 +568,11 @@ namespace CrazyPOS.Server.Controllers
                     if (transaction.Status == "cancelled")
                     {
                         return BadRequest(new { success = false, message = "Transaction already cancelled" });
+                    }
+
+                    if (await dbContext.SalesReturns.AnyAsync(r => r.OriginalTransactionId == transaction.TransactionId))
+                    {
+                        return BadRequest(new { success = false, message = "Transactions with returns cannot be cancelled" });
                     }
 
                     // Restore stock for cancelled items

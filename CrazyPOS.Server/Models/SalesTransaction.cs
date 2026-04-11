@@ -29,6 +29,10 @@ public partial class SalesTransaction
 
     public decimal DiscountAmount { get; set; }
 
+    public decimal RefundedAmount { get; set; }
+
+    public string ReturnStatus { get; set; }
+
     public string Notes { get; set; }
 
     public string Status { get; set; }
@@ -46,4 +50,6 @@ public partial class SalesTransaction
     public virtual ICollection<PaymentTenderLog> PaymentTenderLogs { get; set; } = new List<PaymentTenderLog>();
 
     public virtual ICollection<TransactionPromotion> TransactionPromotions { get; set; } = new List<TransactionPromotion>();
+
+    public virtual ICollection<SalesReturn> SalesReturns { get; set; } = new List<SalesReturn>();
 }

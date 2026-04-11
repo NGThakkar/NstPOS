@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Request Manager Approval for Restricted Discounts user manual">
+  <title>Request Manager Approval for Restricted Discounts | CrazyPOS Docs</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Request Manager Approval for Restricted Discounts</h1>
+      <p class="subtitle"><a href="../index.html">Home</a> &gt; Task Manuals &gt; Request Manager Approval for Restricted Discounts</p>
+    </div>
+  </header>
+  <main class="container">
+    <section class="manual-meta" aria-label="Manual metadata">
+      <div class="meta-item"><strong>Client:</strong> YOUR_CLIENT_NAME</div>
+      <div class="meta-item"><strong>User Role:</strong> Manager</div>
+      <div class="meta-item"><strong>Difficulty Level:</strong> Intermediate</div>
+      <div class="meta-item"><strong>Estimated Time:</strong> 1-3 minutes</div>
+      <div class="meta-item"><strong>Last Updated:</strong> April 4, 2026</div>
+    </section>
+    <article class="card">
+<h2 id="1-overview">1. Overview</h2>
+<h3>What is this task?</h3>
+<p>This task explains how a Manager reviews and approves restricted discount requests during checkout in CrazyPOS. Restricted discounts are controlled by policy and require elevated authorization before they can be applied. This process ensures compliance while allowing valid customer exceptions.</p>
+<h3>When to use this task</h3>
+<p>Use this task when a cashier receives an approval-required message for a discount and escalates it to a manager. It is typically performed during active checkout before payment is finalized.</p>
+<h3>Key benefits</h3>
+<ul class="steps">
+<li>Enforce discount policy with controlled approvals.</li>
+<li>Prevent unauthorized discount overrides.</li>
+<li>Keep checkout moving with quick, auditable manager decisions.</li>
+</ul>
+<h2 id="2-prerequisites">2. Prerequisites</h2>
+<p>Before you begin, ensure you have:</p>
+<ul class="steps">
+<li>[ ] Logged in with a valid Manager account.</li>
+<li>[ ] Permission to approve restricted discounts.</li>
+<li>[ ] Access to the approval request screen or prompt.</li>
+<li>[ ] Visibility into cart details (items, totals, requested discount).</li>
+<li>[ ] Knowledge of store discount policy limits.</li>
+</ul>
+<h3>Required information to gather</h3>
+<ul class="steps">
+<li>Cashier name and terminal processing the sale</li>
+<li>Requested discount details (type, amount, reason)</li>
+<li>Current cart subtotal/final total before and after discount</li>
+</ul>
+<h2 id="3-step-by-step-instructions">3. Step-by-Step Instructions</h2>
+<h3>Step 1: Open the approval request</h3>
+<p>Access the pending discount request from the checkout approval prompt.</p>
+<ol>
+<li>Locate the active request notification from the cashier flow.</li>
+<li>Open the approval modal/panel for the current transaction.</li>
+<li>Confirm transaction ID or reference number matches the cashier request.</li>
+</ol>
+<blockquote><p><strong>Tip:</strong> Validate you are approving the correct transaction before taking action.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Manager approval request panel with transaction reference</div>
+<h3>Step 2: Review discount and cart details</h3>
+<p>Verify that the request is legitimate and policy-compliant.</p>
+<ol>
+<li>Review requested discount type, value, and reason.</li>
+<li>Check impacted cart lines and adjusted totals.</li>
+<li>Compare against policy thresholds and exception rules.</li>
+</ol>
+<blockquote><p><strong>Important:</strong> Do not approve requests that exceed policy without documented exception authority.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Requested discount details with cart summary and policy reference</div>
+<h3>Step 3: Approve or reject the request</h3>
+<p>Make a clear decision and submit it to checkout.</p>
+<ol>
+<li>Select Approve to allow the discount, or Reject to deny it.</li>
+<li>Enter a short decision note if your process requires comments.</li>
+<li>Submit the decision and wait for confirmation message.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Approve/Reject actions with optional manager comment field</div>
+<h3>Step 4: Confirm cashier receives result</h3>
+<p>Ensure the decision is reflected on the cashier checkout screen.</p>
+<ol>
+<li>Verify decision status updates to Approved or Rejected.</li>
+<li>Ask cashier to refresh/recalculate if prompted.</li>
+<li>Confirm checkout continues with correct totals.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Approval status confirmation and updated checkout totals</div>
+<h2 id="4-expected-outcomes">4. Expected Outcomes</h2>
+<p>After completing this task, you should see:</p>
+<ul class="steps">
+<li>[ ] Approval decision is saved against the active transaction.</li>
+<li>[ ] Cashier checkout reflects approved/rejected status immediately or after refresh.</li>
+<li>[ ] Discount is applied only when approval is granted.</li>
+<li>[ ] Audit trail includes manager identity and decision timestamp.</li>
+</ul>
+<h3>Success indicators</h3>
+<ul class="steps">
+<li>Transaction totals update correctly based on the decision.</li>
+<li>Checkout proceeds without policy-violation errors.</li>
+</ul>
+<h2 id="5-troubleshooting-faq">5. Troubleshooting &amp; FAQ</h2>
+<h3>Q: I do not see the approval request.</h3>
+<p><strong>A:</strong> The request may not have been sent successfully or may be tied to a different terminal/session.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Empty approval queue/state screen</div>
+<h3>Q: I approved, but cashier still sees pending or blocked status.</h3>
+<p><strong>A:</strong> The cashier screen may require refresh/recalculation, or there may be a temporary sync delay.</p>
+<p><strong>Steps to resolve:</strong></p>
+<ol>
+<li>Confirm your decision shows as submitted successfully.</li>
+<li>Ask cashier to re-open promotion check or refresh checkout screen.</li>
+<li>Retry the approval flow if status remains stale.</li>
+</ol>
+<h3>Q: The requested discount exceeds policy limits.</h3>
+<p><strong>A:</strong> Reject the request and advise the cashier to follow approved alternatives or escalation policy.</p>
+<blockquote><p><strong>Note:</strong> Keep comments concise and policy-based for audit clarity.</p></blockquote>
+<h3>Common errors</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Error</th>
+<th>Cause</th>
+<th>Solution</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Approval request not found</td>
+<td>Wrong transaction/session selected</td>
+<td>Verify transaction reference and terminal, then reopen request</td>
+</tr>
+<tr>
+<td>Decision submission failed</td>
+<td>Temporary network/backend issue</td>
+<td>Retry once; if repeated, contact support and pause high-risk override</td>
+</tr>
+<tr>
+<td>Discount still blocked after approval</td>
+<td>Checkout not recalculated yet</td>
+<td>Ask cashier to refresh promotions and continue payment flow</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-related-tasks">6. Related Tasks</h2>
+<ul class="steps">
+<li><strong>Apply Server-Side Promotions During Checkout</strong> - Use this before/after approval to calculate final totals and continue payment.</li>
+</ul>
+<h2 id="7-additional-notes-tips">7. Additional Notes &amp; Tips</h2>
+<h3>Best practices</h3>
+<ul class="steps">
+<li>Approve only with clear business justification and policy alignment.</li>
+<li>Keep manager comments short, factual, and audit-friendly.</li>
+<li>Review repeated approval patterns to identify training or pricing issues.</li>
+</ul>
+<h3>Common pitfalls to avoid</h3>
+<ul class="steps">
+<li>Approving without checking final adjusted total.</li>
+<li>Using personal judgment that conflicts with published discount policy.</li>
+</ul>
+<h3>Keyboard shortcuts (if applicable)</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>Tab</code></td>
+<td>Move between approval fields and actions</td>
+</tr>
+<tr>
+<td><code>Enter</code></td>
+<td>Confirm highlighted action (Approve/Reject) where enabled</td>
+</tr>
+</tbody>
+</table>
+<h2 id="need-help">Need help?</h2>
+<p><strong>Contact Support:</strong></p>
+<ul class="steps">
+<li>Email: support@your-client-domain.com</li>
+<li>Phone: +1-000-000-0000</li>
+<li>Help Desk Hours: Monday-Friday, 8:00 AM-6:00 PM</li>
+<li>Knowledge Base: https://your-client-support.local</li>
+</ul>
+<p><strong>Document Version:</strong> 1.0</p>
+<p><strong>Author:</strong> CrazyPOS Documentation Team</p>
+<p><strong>Next Review Date:</strong> July 4, 2026</p>
+    </article>
+  </main>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/search.js"></script>
+</body>
+</html>

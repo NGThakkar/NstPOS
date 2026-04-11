@@ -1,0 +1,1 @@
+crazypos.client\public\vite.svg

@@ -1,0 +1,184 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Monitor and Adjust Inventory user manual">
+  <title>Monitor and Adjust Inventory | CrazyPOS Docs</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Monitor and Adjust Inventory</h1>
+      <p class="subtitle"><a href="../index.html">Home</a> &gt; Task Manuals &gt; Monitor and Adjust Inventory</p>
+    </div>
+  </header>
+  <main class="container">
+    <section class="manual-meta" aria-label="Manual metadata">
+      <div class="meta-item"><strong>Client:</strong> YOUR_CLIENT_NAME</div>
+      <div class="meta-item"><strong>User Role:</strong> Manager</div>
+      <div class="meta-item"><strong>Difficulty Level:</strong> Intermediate</div>
+      <div class="meta-item"><strong>Estimated Time:</strong> 5-15 minutes</div>
+      <div class="meta-item"><strong>Last Updated:</strong> April 4, 2026</div>
+    </section>
+    <article class="card">
+<h2 id="1-overview">1. Overview</h2>
+<h3>What is this task?</h3>
+<p>This task helps Manager users track stock levels and perform controlled quantity adjustments in CrazyPOS. It is structured to keep operations consistent, policy-aligned, and easy to audit.</p>
+<h3>When to use this task</h3>
+<p>Use this task during cycle checks, discrepancy resolution, or replenishment planning.</p>
+<h3>Key benefits</h3>
+<ul class="steps">
+<li>Maintain accurate on-hand quantities</li>
+<li>Reduce stockouts and overstock</li>
+<li>Support reliable purchase decisions</li>
+</ul>
+<h2 id="2-prerequisites">2. Prerequisites</h2>
+<p>Before you begin, ensure you have:</p>
+<ul class="steps">
+<li>[ ] Inventory module access is active</li>
+<li>[ ] Current stock snapshot is available</li>
+<li>[ ] Adjustment reason policy is known</li>
+<li>[ ] Branch/store context selected</li>
+</ul>
+<h3>Required information to gather</h3>
+<ul class="steps">
+<li>Item/SKU list</li>
+<li>Current and corrected quantity</li>
+<li>Adjustment reason and note</li>
+</ul>
+<h2 id="3-step-by-step-instructions">3. Step-by-Step Instructions</h2>
+<h3>Step 1: Access the correct module</h3>
+<p>Open the inventory dashboard and load the adjustment workspace.</p>
+<ol>
+<li>Sign in with your Manager account.</li>
+<li>Open Inventory Dashboard and choose Stock Adjustment view.</li>
+<li>Confirm warehouse/store and date context.</li>
+</ol>
+<blockquote><p><strong>Tip:</strong> Verify filters and context before editing any records.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Landing screen for Monitor and Adjust Inventory</div>
+<h3>Step 2: Enter required details</h3>
+<p>Filter by category/location and inspect discrepancies</p>
+<ol>
+<li>Select the item/SKU requiring stock adjustment.</li>
+<li>Filter items by category/location and open discrepant SKUs.</li>
+<li>Enter corrected counts with adjustment reason.</li>
+</ol>
+<blockquote><p><strong>Important:</strong> Incorrect values can cause policy or reconciliation issues.</p></blockquote>
+<div class="screenshot-placeholder">SCREENSHOT: Data entry and selection fields for Monitor and Adjust Inventory</div>
+<h3>Step 3: Validate the result</h3>
+<p>Apply quantity adjustments with reason codes</p>
+<ol>
+<li>Review variance, projected stock, and validation warnings.</li>
+<li>Verify before/after stock values and variance impact.</li>
+<li>Resolve blocked adjustments or negative-stock warnings.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Validation panel with totals and status checks</div>
+<h3>Step 4: Submit and confirm</h3>
+<p>Save and verify inventory stats update</p>
+<ol>
+<li>Confirm adjustment submission for selected items.</li>
+<li>Save adjustments and confirm updated on-hand quantities.</li>
+<li>Review stock KPIs for immediate anomalies.</li>
+</ol>
+<div class="screenshot-placeholder">SCREENSHOT: Success message with generated reference</div>
+<h2 id="4-expected-outcomes">4. Expected Outcomes</h2>
+<p>After completing this task, you should see:</p>
+<ul class="steps">
+<li>[ ] The workflow is saved successfully.</li>
+<li>[ ] Status reflects the final approved/submitted state.</li>
+<li>[ ] A reference ID or log entry is generated.</li>
+<li>[ ] The process is ready for related follow-up tasks.</li>
+</ul>
+<h3>Success indicators</h3>
+<ul class="steps">
+<li>No blocking validation or policy error remains.</li>
+<li>Record updates are visible in list/history views.</li>
+</ul>
+<h2 id="5-troubleshooting-faq">5. Troubleshooting &amp; FAQ</h2>
+<h3>Q: Stock numbers look outdated</h3>
+<p><strong>A:</strong> Refresh data and confirm last sync time.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Relevant screen for Stock numbers look outdated</div>
+<h3>Q: Adjustment rejected</h3>
+<p><strong>A:</strong> Check permissions and mandatory reason fields.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Relevant screen for Adjustment rejected</div>
+<h3>Q: Counts differ from physical stock</h3>
+<p><strong>A:</strong> Run recount and document variance.</p>
+<div class="screenshot-placeholder">SCREENSHOT: Relevant screen for Counts differ from physical stock</div>
+<h3>Common errors</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Error</th>
+<th>Cause</th>
+<th>Solution</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Negative stock not allowed</td>
+<td>Adjustment exceeds available quantity</td>
+<td>Use proper movement type or investigate shrinkage</td>
+</tr>
+<tr>
+<td>Reason code required</td>
+<td>Policy requires reason for edits</td>
+<td>Select valid reason and resubmit</td>
+</tr>
+<tr>
+<td>Update conflict</td>
+<td>Another user changed stock simultaneously</td>
+<td>Reload item and retry adjustment</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-related-tasks">6. Related Tasks</h2>
+<ul class="steps">
+<li><strong>Record Manual Inventory Movements</strong> - Related workflow reference for this task.</li>
+<li><strong>Review Low-Stock Items and Inventory Stats</strong> - Related workflow reference for this task.</li>
+</ul>
+<h2 id="7-additional-notes-tips">7. Additional Notes &amp; Tips</h2>
+<h3>Best practices</h3>
+<ul class="steps">
+<li>Follow the same sequence every time.</li>
+<li>Confirm critical amounts and statuses before submit.</li>
+<li>Record concise, policy-based notes for audit clarity.</li>
+</ul>
+<h3>Common pitfalls to avoid</h3>
+<ul class="steps">
+<li>Submitting without final validation.</li>
+<li>Processing in the wrong branch/store context.</li>
+</ul>
+<h3>Keyboard shortcuts (if applicable)</h3>
+<table class="manual-table">
+<thead><tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Tab</td>
+<td>Move to the next field</td>
+</tr>
+<tr>
+<td>Enter</td>
+<td>Confirm focused action where enabled</td>
+</tr>
+</tbody>
+</table>
+<h2 id="need-help">Need help?</h2>
+<p><strong>Contact Support:</strong></p>
+<ul class="steps">
+<li>Email: support@your-client-domain.com</li>
+<li>Phone: +1-000-000-0000</li>
+<li>Help Desk Hours: Monday-Friday, 8:00 AM-6:00 PM</li>
+<li>Knowledge Base: https://your-client-support.local</li>
+</ul>
+<p><strong>Document Version:</strong> 1.1</p>
+<p><strong>Author:</strong> CrazyPOS Documentation Team</p>
+<p><strong>Next Review Date:</strong> July 4, 2026</p>
+    </article>
+  </main>
+  <script src="../assets/js/navigation.js"></script>
+  <script src="../assets/js/search.js"></script>
+</body>
+</html>
