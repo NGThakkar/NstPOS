@@ -378,7 +378,7 @@ export const Inventory = () => {
                                 ) : (
                                     movementHistory.map((movement, idx) => (
                                         <tr key={idx} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 text-sm text-gray-600">{new Date(movement.createdAt).toLocaleString()}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-600">{new Date(movement.createdAt).toLocaleString("en-IN")}</td>
                                             <td className="px-6 py-4 text-sm">
                                                 <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
                                                     {movement.movementType}
