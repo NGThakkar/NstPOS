@@ -63,6 +63,7 @@ namespace CrazyPOS.Server.Dto
         public List<long> RequestedPromotionIds { get; set; } = new();
         public string? CouponCode { get; set; }
         public List<AppliedPromotionInputDto> AppliedPromotions { get; set; } = new();
+        public long? CustomerId { get; set; }
     }
 
     public class CreateTransactionItemDto

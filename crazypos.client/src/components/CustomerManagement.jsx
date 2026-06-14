@@ -207,6 +207,7 @@ export const CustomerManagement = () => {
     };
 
     const closeModal = () => {
+        setMessage({ type: '', text: '' });
         setShowModal(false);
         resetForm();
     };
@@ -240,7 +241,7 @@ export const CustomerManagement = () => {
             </div>
 
             {/* Messages */}
-            {message.text && (
+            {message.text && !showModal && (
                 <div className={`p-4 rounded-lg flex items-center gap-3 ${
                     message.type === 'success' 
                         ? 'bg-green-50 border border-green-200' 
@@ -356,6 +357,18 @@ export const CustomerManagement = () => {
                         </div>
 
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                            {/* Messages */}
+                            {message.text && showModal && (
+                                <div className={`p-4 rounded-lg flex items-center gap-3 ${
+                                    message.type === 'success' 
+                                        ? 'bg-green-50 border border-green-200' 
+                                        : 'bg-red-50 border border-red-200'
+                                }`}>
+                                    <span className={message.type === 'success' ? 'text-green-800' : 'text-red-800'}>
+                                        {message.text}
+                                    </span>
+                                </div>
+                            )}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>

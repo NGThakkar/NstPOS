@@ -369,9 +369,9 @@ export const TransactionHistory = ({ transactions, initialFilters = null }) => {
                                                 >
                                                     <RefreshCw className="w-4 h-4" />
                                                 </button>
-                                                <button className="text-green-600 hover:text-green-800 transition-colors">
+                                                {/* <button className="text-green-600 hover:text-green-800 transition-colors">
                                                     <Receipt className="w-4 h-4" />
-                                                </button>
+                                                </button> */}
                                             </div>
                                         </td>
                                     </tr>

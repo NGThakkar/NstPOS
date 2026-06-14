@@ -8,10 +8,12 @@ export const ShoppingCart = ({
     onRemoveItem,
     onCheckout,
     onAddToCart,
-    customers
+    customers,
+    selectedCustomer,
+    setSelectedCustomer
 }) => {
     const [showClearConfirm, setShowClearConfirm] = useState(false);
-    const [selectedCustomer, setSelectedCustomer] = useState(3);
+    // const [selectedCustomer, setSelectedCustomer] = useState(3);
     const [showCustomerMenu, setShowCustomerMenu] = useState(false);
     const [showHoldListModal, setShowHoldListModal] = useState(false);
     const [holdOrders, setHoldOrders] = useState([]);

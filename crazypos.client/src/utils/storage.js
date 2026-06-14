@@ -133,7 +133,8 @@ export async function saveSaleTransaction(transaction) {
             pricingSnapshotId: transaction.pricingSnapshotId || null,
             requestedPromotionIds: transaction.requestedPromotionIds || [],
             couponCode: transaction.couponCode || null,
-            appliedPromotions: transaction.appliedPromotions || []
+            appliedPromotions: transaction.appliedPromotions || [],
+                CustomerId: transaction.customerid || null
         };
 
         const result = await apiFetch('/api/Sales/CreateTransaction', {

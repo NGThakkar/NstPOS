@@ -12,6 +12,7 @@ export const Sales = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [customers, setCustomers] = useState([]);
+    const [selectedCustomer, setSelectedCustomer] = useState(3);
 
     // Load products and categories on mount
     useEffect(() => {
@@ -106,6 +107,8 @@ export const Sales = () => {
         setProducts(updatedProducts);
         //saveProducts(updatedProducts);
 
+        transaction.customerid = selectedCustomer;
+
         // Save transaction and capture the result (which contains backend transaction ID)
         console.log('Sales: Calling saveTransaction...');
         const result = await saveTransaction(transaction);
@@ -146,6 +149,8 @@ export const Sales = () => {
                         onCheckout={() => setShowPaymentModal(true)}
                         onAddToCart={handleAddToCart}
                         customers={customers}
+                        selectedCustomer={selectedCustomer}
+                        setSelectedCustomer={setSelectedCustomer}
                     />
                 </div>
             </div>

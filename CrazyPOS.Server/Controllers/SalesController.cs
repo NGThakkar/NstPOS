@@ -246,7 +246,8 @@ namespace CrazyPOS.Server.Controllers
                         Notes = transactionDto.Notes,
                         Status = "completed",
                         IsActive = true,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = DateTime.UtcNow,
+                        CustomerId = transactionDto.CustomerId
                     };
 
                     dbContext.SalesTransactions.Add(transaction);
@@ -499,6 +500,10 @@ namespace CrazyPOS.Server.Controllers
                         t.Status,
                         t.RefundedAmount,
                         t.ReturnStatus,
+                        // t.Customer = dbContext.Customers..FirstOrDefault(c => c.CustomerId == t.CustomerId.GetValueOrDefault(0)) ?? new Customer(),
+                            CustomerName = t.CustomerId.HasValue
+                                ? dbContext.Customers.Where(c => c.CustomerId == t.CustomerId.Value).Select(c => c.FirstName + " " + c.LastName).FirstOrDefault() ?? "Unknown customer"
+                                : "No customer",
                         HasOpenRefundSettlement = dbContext.SalesReturns
                             .Where(r => r.OriginalTransactionId == t.TransactionId)
                             .Any(r => r.RefundStatus == "pending"),

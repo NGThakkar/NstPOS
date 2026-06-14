@@ -663,13 +663,13 @@ function App() {
 
                 {/* Main Content */}
                 <main className="flex-1 p-6">
-                    {isInternalAgentAllowed ? (
+                    {/* {isInternalAgentAllowed ? (
                         <InternalAgentPanel
                             onRunCommand={executeInternalAgentAction}
                             lastMessage={agentMessage}
                             isBusy={agentBusy}
                         />
-                    ) : null}
+                    ) : null} */}
                     {renderContent()}
                 </main>
             </div>
