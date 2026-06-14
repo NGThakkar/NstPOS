@@ -105,7 +105,7 @@ export const Login = ({ onLoginSuccess }) => {
                             <LogIn className="w-8 h-8 text-blue-600" />
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-white mb-2">CrayPOS</h1>
+                    <h1 className="text-3xl font-bold text-white mb-2">NstPOS</h1>
                     <p className="text-blue-100">Professional Point of Sale System</p>
                 </div>
 
@@ -123,7 +123,7 @@ export const Login = ({ onLoginSuccess }) => {
                         >
                             Login
                         </button>
-                        <button
+                        {/* <button
                             onClick={() => { setIsLogin(false); setMessage({ type: '', text: '' }); }}
                             className={`flex-1 py-4 font-medium transition-colors ${
                                 !isLogin
@@ -132,7 +132,7 @@ export const Login = ({ onLoginSuccess }) => {
                             }`}
                         >
                             Register
-                        </button>
+                        </button> */}
                     </div>
 
                     {/* Form Content */}

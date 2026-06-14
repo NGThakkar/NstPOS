@@ -233,7 +233,7 @@ namespace CrazyPOS.Server.Controllers
                     {
                         TransactionCode = "TXN-" + DateTime.UtcNow.ToString("yyyyMMddHHmmssfff"),
                         UserId = userId,
-                        TransactionDate = DateTime.UtcNow,
+                        TransactionDate = DateTime.Now.ToLocalTime(),
                         SubTotal = pricingSnapshot.SubTotal,
                         TaxAmount = pricingSnapshot.TaxAmount,
                         TotalAmount = pricingSnapshot.TotalAmount,

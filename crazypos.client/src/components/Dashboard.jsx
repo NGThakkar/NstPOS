@@ -38,6 +38,7 @@ export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters, c
     const [kpiSource, setKpiSource] = useState('local');
 
     useEffect(() => {
+        // console.log("transactions", transactions.slice(0, 5));
         if (userRole === 'Cashier') {
             setKpis(localKpis);
             setKpiSource('local');
@@ -197,7 +198,7 @@ export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters, c
                 <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent 5 Transactions</h3>
                     <div className="space-y-3">
-                        {transactions.slice(-5).reverse().map((transaction) => {
+                        {transactions.slice(0, 5).map((transaction) => {
                             // Handle both database and localStorage formats
                             const transId = transaction.transactionId || transaction.id || 'N/A';
                             const transCode = transaction.transactionCode || (transaction.id && transaction.id.slice(-6)) || 'Unknown';
@@ -211,7 +212,7 @@ export const Dashboard = ({ transactions, setActiveTab, setTransactionFilters, c
                                     <div>
                                         <p className="font-medium text-gray-900">Transaction #{transCode}</p>
                                         <p className="text-sm text-gray-600 flex">
-                                            {new Date(transDate).toLocaleString()} <span className="flex align-middle"><Dot /></span>  {itemCount} items
+                                            {new Date(transDate).toLocaleString("en-IN")} <span className="flex align-middle"><Dot /></span>  {itemCount} items
                                         </p>
                                     </div>
                                     <div className="text-right">

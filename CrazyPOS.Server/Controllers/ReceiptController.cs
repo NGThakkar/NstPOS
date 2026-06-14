@@ -62,9 +62,9 @@ namespace CrazyPOS.Server.Controllers
                     var receiptDetail = new ReceiptDetailDto
                     {
                         // Business Information (hardcoded for now - can be moved to settings)
-                        BusinessName = "CrazyPOS Store",
+                        BusinessName = "NstPOS Store",
                         BusinessPhone = "+1 (555) 123-4567",
-                        BusinessEmail = "info@crazypos.com",
+                        BusinessEmail = "info@nstpos.com",
                         BusinessAddress = "123 Business Street, City, State 12345",
 
                         ReceiptNumber = $"RCP-{transaction.TransactionId:000000}",

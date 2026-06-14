@@ -44,9 +44,9 @@ export const ReceiptModal = ({ isOpen, transactionId, onClose }) => {
                 receiptNumber: `RCP-${transactionId || 'N/A'}`,
                 transactionDate: new Date().toISOString(),
                 transactionCode: `TXN-${transactionId || 'N/A'}`,
-                businessName: 'CrazyPOS Store',
+                businessName: 'NstPOS Store',
                 businessPhone: '+1 (555) 123-4567',
-                businessEmail: 'info@crazypos.com',
+                businessEmail: 'info@nstpos.com',
                 businessAddress: '123 Business Street, City, State 12345',
                 customerName: 'Customer',
                 customerEmail: '',
@@ -182,7 +182,7 @@ export const ReceiptModal = ({ isOpen, transactionId, onClose }) => {
             <body>
                 <div class="receipt">
                     <div class="header">
-                        <div class="business-name">${data.businessName || 'CrazyPOS Store'}</div>
+                        <div class="business-name">${data.businessName || 'NstPOS Store'}</div>
                         <div class="business-info">
                             <div>${data.businessAddress || ''}</div>
                             <div>Ph: ${data.businessPhone || ''}</div>
@@ -260,7 +260,7 @@ export const ReceiptModal = ({ isOpen, transactionId, onClose }) => {
                     <div class="footer">
                         <div><strong>Payment Method:</strong> ${data.paymentMethod || 'Unknown'}</div>
                         <div class="thank-you">Thank You for Your Purchase!</div>
-                        <div style="margin-top: 10px; font-size: 10px;">Powered by CrazyPOS</div>
+                        <div style="margin-top: 10px; font-size: 10px;">Powered by NstPOS</div>
                     </div>
                 </div>
             </body>
