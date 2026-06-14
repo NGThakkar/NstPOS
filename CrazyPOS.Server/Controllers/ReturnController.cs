@@ -100,7 +100,7 @@ namespace CrazyPOS.Server.Controllers
                     CustomerId = transaction.CustomerId,
                     ProcessedByUserId = _currentUser.UserId,
                     ApprovedByUserId = _currentUser.IsInRole("Admin") || _currentUser.IsInRole("Manager") ? _currentUser.UserId : null,
-                    ReturnDate = DateTime.UtcNow,
+                    ReturnDate = DateTime.Now.ToLocalTime(),
                     Status = "completed",
                     RefundStatus = IsImmediateRefundMethod(request.RefundMethod) ? "settled" : "pending",
                     ReasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? "unspecified" : request.ReasonCode.Trim(),
@@ -110,7 +110,7 @@ namespace CrazyPOS.Server.Controllers
                     DiscountReversal = preview.DiscountReversal,
                     RefundTotal = preview.RefundTotal,
                     Notes = request.Notes,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now.ToLocalTime()
                 };
 
                 dbContext.SalesReturns.Add(salesReturn);
@@ -136,7 +136,7 @@ namespace CrazyPOS.Server.Controllers
                         RefundLineTotal = refundLineTotal,
                         InventoryDisposition = NormalizeDisposition(input.InventoryDisposition),
                         DispositionNotes = input.DispositionNotes,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = DateTime.Now.ToLocalTime()
                     };
 
                     dbContext.ReturnItems.Add(returnItem);
@@ -161,7 +161,7 @@ namespace CrazyPOS.Server.Controllers
                         MovementType = "Return",
                         Reference = salesReturn.ReturnCode,
                         Notes = $"Return {salesReturn.ReturnCode} ({returnItem.InventoryDisposition})",
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now.ToLocalTime(),
                         CreatedBy = _currentUser.Username
                     });
                 }
@@ -173,9 +173,9 @@ namespace CrazyPOS.Server.Controllers
                     Amount = salesReturn.RefundTotal,
                     SettlementStatus = salesReturn.RefundStatus,
                     ProcessedByUserId = salesReturn.RefundStatus == "settled" ? _currentUser.UserId : null,
-                    ProcessedAt = salesReturn.RefundStatus == "settled" ? DateTime.UtcNow : null,
+                    ProcessedAt = salesReturn.RefundStatus == "settled" ? DateTime.Now.ToLocalTime() : null,
                     Notes = request.Notes,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now.ToLocalTime()
                 });
 
                 transaction.RefundedAmount = RoundCurrency(transaction.RefundedAmount + salesReturn.RefundTotal);
@@ -294,15 +294,15 @@ namespace CrazyPOS.Server.Controllers
                     SettlementStatus = request.SettlementStatus.Trim().ToLowerInvariant(),
                     PaymentReference = request.PaymentReference,
                     ProcessedByUserId = _currentUser.UserId,
-                    ProcessedAt = DateTime.UtcNow,
+                    ProcessedAt = DateTime.Now.ToLocalTime(),
                     Notes = request.Notes,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now.ToLocalTime()
                 };
 
                 dbContext.RefundSettlements.Add(settlement);
 
                 salesReturn.RefundStatus = settlement.SettlementStatus;
-                salesReturn.UpdatedAt = DateTime.UtcNow;
+                salesReturn.UpdatedAt = DateTime.Now.ToLocalTime();
                 dbContext.SalesReturns.Update(salesReturn);
 
                 await dbContext.SaveChangesAsync();

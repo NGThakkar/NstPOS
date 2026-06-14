@@ -246,7 +246,7 @@ namespace CrazyPOS.Server.Controllers
                         Notes = transactionDto.Notes,
                         Status = "completed",
                         IsActive = true,
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now.ToLocalTime(),
                         CustomerId = transactionDto.CustomerId
                     };
 
@@ -285,7 +285,7 @@ namespace CrazyPOS.Server.Controllers
                             PromotionDiscountAmount = snapshotItem.PromotionDiscountAmount,
                             PricingRuleSnapshot = snapshotItem.PricingRuleSnapshot,
                             LineTotal = snapshotItem.LineTotal,
-                            CreatedAt = DateTime.UtcNow
+                            CreatedAt = DateTime.Now.ToLocalTime()
                         };
 
                         dbContext.TransactionItems.Add(transactionItem);
@@ -300,7 +300,7 @@ namespace CrazyPOS.Server.Controllers
                             MovementType = "Sale",
                             Reference = transaction.TransactionCode,
                             Notes = $"Sale via transaction {transaction.TransactionCode}",
-                            CreatedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.Now.ToLocalTime(),
                             CreatedBy = "POS System"
                         };
 
@@ -314,7 +314,7 @@ namespace CrazyPOS.Server.Controllers
                             TransactionId = transaction.TransactionId,
                             PromotionId = promotion.PromotionId,
                             DiscountAmount = promotion.DiscountAmount,
-                            AppliedAt = DateTime.UtcNow,
+                            AppliedAt = DateTime.Now.ToLocalTime(),
                             ApprovalUserId = promotion.RequiresApproval
                                 ? (pricingSnapshot.ApprovedByUserId ?? (_currentUser.IsInRole("Admin") || _currentUser.IsInRole("Manager") ? userId : null))
                                 : null,
@@ -597,7 +597,7 @@ namespace CrazyPOS.Server.Controllers
                                 MovementType = "Return",
                                 Reference = $"Reversal of {transaction.TransactionCode}",
                                 Notes = $"Cancelled transaction - {reason}",
-                                CreatedAt = DateTime.UtcNow,
+                                CreatedAt = DateTime.Now.ToLocalTime(),
                                 CreatedBy = "POS System"
                             };
 
@@ -667,7 +667,7 @@ namespace CrazyPOS.Server.Controllers
                     TotalDiscount = dailyTransactions.Sum(t => t.DiscountAmount),
                     TransactionCount = dailyTransactions.Count,
                     ItemsSold = dailyItems.Sum(i => i.Quantity),
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now.ToLocalTime()
                 };
                 dbContext.DailySalesSummaries.Add(summary);
             }
